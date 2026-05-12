@@ -21,6 +21,7 @@
     "supertest": "^7.2.2"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "axios": "^1.15.2",
     "cors": "^2.8.6",
     "express": "^5.2.1",
