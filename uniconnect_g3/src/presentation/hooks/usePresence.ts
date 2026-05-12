@@ -3,44 +3,49 @@ import { useChatSocket } from './useChatSocket';
 
 export function useMyPresence() {}
 
-const POLL_INTERVAL_MS = 5000;
-
 export function useOtherPresence(otherUserId: string | null) {
   const [isOnline, setIsOnline] = useState(false);
   const chatSocket = useChatSocket();
 
+  // Trackea si el socket está conectado para forzar re-ejecución del useEffect
+  const [socketConnected, setSocketConnected] = useState(
+    () => chatSocket?.connected ?? false
+  );
+
+  // Escucha los eventos connect/disconnect del socket para actualizar socketConnected
   useEffect(() => {
-    if (!otherUserId || !chatSocket) return;
-
-    const queryStatus = () => {
-      chatSocket.emit('check_user_status', { userId: otherUserId }, (res: { status: string }) => {
-        setIsOnline(res?.status === 'online');
-      });
+    if (!chatSocket) return;
+    const onConnect = () => setSocketConnected(true);
+    const onDisconnect = () => setSocketConnected(false);
+    chatSocket.on('connect', onConnect);
+    chatSocket.on('disconnect', onDisconnect);
+    // Si ya está conectado, actualiza inmediatamente
+    if (chatSocket.connected) setSocketConnected(true);
+    return () => {
+      chatSocket.off('connect', onConnect);
+      chatSocket.off('disconnect', onDisconnect);
     };
+  }, [chatSocket]);
 
-    // Consulta inicial
-    if (chatSocket.connected) {
-      queryStatus();
-    } else {
-      chatSocket.once('connect', queryStatus);
-    }
+  // Registra el listener de presencia solo cuando el socket esté conectado
+  useEffect(() => {
+    if (!otherUserId || !chatSocket || !socketConnected) return;
 
-    // Polling: el backend emite USER_STATUS_CHANGED solo a rooms de grupos,
-    // no al chat 1-a-1, por lo que necesitamos consultar periódicamente.
-    const interval = setInterval(queryStatus, POLL_INTERVAL_MS);
+    // Consulta estado inicial
+    chatSocket.emit('check_user_status', { userId: otherUserId }, (res: any) => {
+      setIsOnline(res?.status === 'online');
+    });
 
-    // Listener por si el backend hace fallback broadcast (io.emit)
+    // Listener en tiempo real
     const handler = (data: { userId: string; status: string }) => {
       if (data.userId === otherUserId) setIsOnline(data.status === 'online');
     };
     chatSocket.on('USER_STATUS_CHANGED', handler);
 
     return () => {
-      clearInterval(interval);
-      chatSocket.off('connect', queryStatus);
       chatSocket.off('USER_STATUS_CHANGED', handler);
     };
-  }, [otherUserId, chatSocket]);
+  }, [otherUserId, chatSocket, socketConnected]);
 
   return { isOnline };
 }

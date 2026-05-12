@@ -1,5 +1,30 @@
 # CHANGES
 
+## [FIX] Presencia — actualización en tiempo real y crash mobile
+
+**Fecha:** 2026-05-12
+
+### Bug 1 (Web): presencia no actualizaba sin recargar
+**Síntoma:** Cuando un usuario que estaba desconectado se conecta, el indicador no cambia a "En línea" — solo se actualiza si cambias de chat o recargas la página.
+
+**Causa:** El `useEffect` en `useOtherPresence` tiene el socket como dependencia, pero el socket es una referencia estable que no cambia. Cuando el socket es `null` al montar (porque aún se está conectando), el `useEffect` sale por el guard `if (!chatSocket) return` y **nunca se vuelve a ejecutar** para registrar el listener cuando el socket ya está listo.
+
+**Fix:** Estado `socketConnected` como dependencia del `useEffect` para forzar re-ejecución cuando el socket conecta. Se escuchan los eventos `connect`/`disconnect` del socket para actualizar este estado.
+
+### Bug 2 (Mobile): crash "Invalid hook call" en _layout.tsx
+**Síntoma:** Crash con error "Cannot read property 'useCallback' of null" al iniciar la app.
+
+**Causa:** `useChatSocket` llamaba `authStore((state) => state.user)` dentro del `useEffect` — esto es un **hook de React** (Zustand hook) que no puede llamarse desde un singleton de módulo. Viola las reglas de hooks y causa el crash.
+
+**Fix:** Reemplazado por `authStore.getState().user` (API imperativa de Zustand, NO un hook). Esta API es válida en cualquier contexto, no solo en componentes React.
+
+**Archivos modificados:**
+- `uniconnect_web/src/hooks/usePresence.ts` - Estado `socketConnected` como dependencia
+- `uniconnect_g3/src/presentation/hooks/usePresence.ts` - Estado `socketConnected` como dependencia
+- `uniconnect_g3/src/presentation/hooks/useChatSocket.ts` - `authStore()` → `authStore.getState()`
+
+---
+
 ## [FIX] Presencia — estado no se actualiza en tiempo real en chat 1-a-1
 
 **Fecha:** 2026-05-11

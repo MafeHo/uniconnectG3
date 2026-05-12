@@ -10,12 +10,14 @@ const _listeners = new Set<(s: Socket | null) => void>();
 const notifyListeners = (s: Socket | null) => _listeners.forEach(fn => fn(s));
 
 export const useChatSocket = () => {
-  const user = authStore((state) => state.user);
   const [socket, setSocket] = useState<Socket | null>(_socket?.connected ? _socket : null);
 
   useEffect(() => {
     const listener = (s: Socket | null) => setSocket(s);
     _listeners.add(listener);
+
+    // Usar .getState() en lugar del hook — es la API imperativa, NO un hook
+    const user = authStore.getState().user;
 
     if (!user?.uid) {
       if (_socket) {
@@ -50,7 +52,7 @@ export const useChatSocket = () => {
     }
 
     return () => { _listeners.delete(listener); };
-  }, [user?.uid]);
+  }, []);
 
   return socket;
 };
