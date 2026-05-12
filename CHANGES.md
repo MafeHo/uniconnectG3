@@ -1,5 +1,23 @@
 # CHANGES
 
+## [FIX] Presencia — estado no se actualiza en tiempo real en chat 1-a-1
+
+**Fecha:** 2026-05-11
+
+**Causa encontrada:** El backend emite `USER_STATUS_CHANGED` **solo a los rooms de grupos compartidos** (`io.to(gid).emit(...)`). En un chat 1-a-1, el usuario A no está en ningún room de grupo con B, así que el evento nunca llega al listener del frontend. El fallback `io.emit(...)` (broadcast global) solo ocurre si `getGroupsByUserId` lanza una excepción, no en condiciones normales.
+
+**Fix aplicado:** Polling cada 5 segundos con `check_user_status` (callback/ack) mientras el chat está abierto. El listener `USER_STATUS_CHANGED` se mantiene como complemento para el caso en que el backend haga fallback broadcast.
+
+**Archivos modificados:**
+- `uniconnect_web/src/hooks/usePresence.ts`
+- `uniconnect_g3/src/presentation/hooks/usePresence.ts`
+
+**Nota:** La solución ideal sería que el backend emitiera `USER_STATUS_CHANGED` también al room `user_${userId}` (que ya existe), pero eso requiere modificar el backend. El polling de 5s es un workaround funcional con impacto mínimo (una consulta ligera por socket cada 5s solo mientras el chat está visible).
+
+---
+
+
+
 ## [FIX] Presencia — "Desconectado" aunque usuario está activo
 
 **Fecha:** 2026-05-11
