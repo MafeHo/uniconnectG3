@@ -50,15 +50,6 @@ function formatTime(timestamp?: { _seconds: number } | { seconds: number }) {
   return new Date(seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-const formatLastSeen = (date: Date): string => {
-  const now = new Date();
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diff < 60) return 'hace un momento';
-  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
-  return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
-}
-
 export default function ChatsPage() {
   const { user } = useAuthStore()
   const location = useLocation()
@@ -229,7 +220,7 @@ export default function ChatsPage() {
 
   // Obtener presencia del otro usuario en el chat seleccionado
   const otherUser = selectedChat ? getOtherUser(selectedChat) : null
-  const { isOnline, lastSeen } = useOtherPresence(otherUser?.uid ?? null)
+  const { isOnline } = useOtherPresence(otherUser?.uid ?? null)
 
   return (
     <div className="flex h-[calc(100vh-56px)]">
@@ -318,15 +309,7 @@ export default function ChatsPage() {
               <div className="flex-1">
                 <p className="font-semibold text-gray-900">{otherUser?.name}</p>
                 <p className={`text-xs ${isOnline ? 'text-green-600' : 'text-gray-500'}`}>
-                  {isOnline ? (
-                    'En línea'
-                  ) : lastSeen ? (
-                    <span className="text-gray-500">
-                      Últ. vez {formatLastSeen(lastSeen)}
-                    </span>
-                  ) : (
-                    'Desconectado'
-                  )}
+                  {isOnline ? 'En línea' : 'Desconectado'}
                 </p>
               </div>
             </div>

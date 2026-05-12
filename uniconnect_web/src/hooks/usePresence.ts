@@ -1,91 +1,34 @@
 import { useEffect, useState } from 'react';
-import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firestore';
-import { useAuthStore } from '@uniconnect/shared';
-import type { Socket } from 'socket.io-client';
+import { useChatSocket } from '../context/SocketContext';
 
-// Hook para PUBLICAR la presencia del usuario actual
-export function useMyPresence(notifSocket: Socket | null) {
-  const { user } = useAuthStore();
+// El backend gestiona la presencia automáticamente via activeUsers Map
+// al conectar/desconectar el socket (con userId en el handshake query).
+// No hay nada que hacer desde el frontend para publicar presencia.
+export function useMyPresence() {}
 
-  useEffect(() => {
-    if (!user?.uid || !db) return;
-
-    const presenceRef = doc(db, 'presence', user.uid);
-
-    // Marcar como online al conectar
-    const markOnline = () => {
-      setDoc(presenceRef, {
-        online: true,
-        lastSeen: serverTimestamp(),
-        uid: user.uid,
-      }, { merge: true }).catch(console.error);
-    };
-
-    // Marcar como offline
-    const markOffline = () => {
-      setDoc(presenceRef, {
-        online: false,
-        lastSeen: serverTimestamp(),
-      }, { merge: true }).catch(console.error);
-    };
-
-    // Marcar online inmediatamente
-    markOnline();
-
-    // Marcar offline cuando el socket se desconecta
-    if (notifSocket) {
-      notifSocket.on('connect', markOnline);
-      notifSocket.on('disconnect', markOffline);
-    }
-
-    // Marcar offline al cerrar la pestaña/navegador
-    window.addEventListener('beforeunload', markOffline);
-    
-    // También al perder visibilidad (minimizar, cambiar pestaña)
-    const handleVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        markOffline();
-      } else {
-        markOnline();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      markOffline();
-      window.removeEventListener('beforeunload', markOffline);
-      document.removeEventListener('visibilitychange', handleVisibility);
-      if (notifSocket) {
-        notifSocket.off('connect', markOnline);
-        notifSocket.off('disconnect', markOffline);
-      }
-    };
-  }, [user?.uid, notifSocket]);
-}
-
-// Hook para LEER la presencia de otro usuario
+// Hook para LEER la presencia de otro usuario via chat-service WebSocket
 export function useOtherPresence(otherUserId: string | null) {
   const [isOnline, setIsOnline] = useState(false);
-  const [lastSeen, setLastSeen] = useState<Date | null>(null);
+  const chatSocket = useChatSocket();
 
   useEffect(() => {
-    if (!otherUserId || !db) return;
+    if (!otherUserId || !chatSocket) return;
 
-    const presenceRef = doc(db, 'presence', otherUserId);
-    const unsubscribe = onSnapshot(presenceRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        setIsOnline(data.online === true);
-        const ts = data.lastSeen;
-        if (ts?.toDate) setLastSeen(ts.toDate());
-      } else {
-        setIsOnline(false);
-      }
+    // Consultar estado actual al montar
+    chatSocket.emit('check_user_status', { userId: otherUserId }, (res: { userId: string; status: string }) => {
+      setIsOnline(res?.status === 'online');
     });
 
-    return () => unsubscribe();
-  }, [otherUserId]);
+    // Escuchar cambios en tiempo real
+    const handleStatusChange = (data: { userId: string; status: string }) => {
+      if (data.userId === otherUserId) {
+        setIsOnline(data.status === 'online');
+      }
+    };
 
-  return { isOnline, lastSeen };
+    chatSocket.on('USER_STATUS_CHANGED', handleStatusChange);
+    return () => { chatSocket.off('USER_STATUS_CHANGED', handleStatusChange); };
+  }, [otherUserId, chatSocket]);
+
+  return { isOnline };
 }

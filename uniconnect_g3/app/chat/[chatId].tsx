@@ -8,14 +8,6 @@ import ChatBubble from '@/src/presentation/components/chat/ChatBubble';
 import MessageInput from '@/src/presentation/components/chat/MessageInput';
 import UCaldasTheme from '../constants/Colors';
 
-const formatRelativeTime = (date: Date): string => {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 60) return 'hace un momento';
-  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
-  return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
-};
-
 export default function ChatScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
   const { messages, chatDetails, otherUserName, user, handleAddReaction } = useChat(chatId);
@@ -26,7 +18,7 @@ export default function ChatScreen() {
 
   // Obtener presencia del otro usuario
   const otherUserId = chatDetails?.participants?.find((id: string) => id !== user?.uid) ?? null;
-  const { isOnline, lastSeen } = useOtherPresence(otherUserId);
+  const { isOnline } = useOtherPresence(otherUserId);
 
   useEffect(() => {
     const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
@@ -73,13 +65,7 @@ export default function ChatScreen() {
                   )}
                 </View>
                 <Text style={{ color: isOnline ? '#10b981' : '#d1d5db', fontSize: 11 }} numberOfLines={1}>
-                  {isOnline ? (
-                    'En línea'
-                  ) : lastSeen ? (
-                    `Últ. vez ${formatRelativeTime(lastSeen)}`
-                  ) : (
-                    'Desconectado'
-                  )}
+                  {isOnline ? 'En línea' : 'Desconectado'}
                 </Text>
               </View>
             </View>

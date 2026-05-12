@@ -52,8 +52,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     };
   }, [user?.uid]);
 
-  // Publicar presencia del usuario actual
-  useMyPresence(notifSocketRef.current);
+  // Presencia gestionada automáticamente por el backend al conectar/desconectar el chatSocket
+  useMyPresence();
 
   return (
     <SocketContext.Provider value={{ notifSocket: notifSocketRef.current, chatSocket: chatSocketRef.current }}>
