@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { db } from '../../../data/sources/FirebaseClient';
 import { useNotificationContext } from '../../context/NotificationContext';
-import { authStore } from '@uniconnect/shared';
+import { authStore, getNotificationSeverity, SEVERITY_COLORS } from '@uniconnect/shared';
 import { respondToAdminTransfer } from '../../../di/container';
 import { UCaldasTheme } from '@/app/constants/Colors';
 
@@ -90,15 +90,8 @@ const NotificationCenter = () => {
   };
 
   const getIconColor = (type: string | undefined): string => {
-    switch (type) {
-      case 'join_request': return '#0056b3';
-      case 'new_member': return '#28a745';
-      case 'admin_transfer': return UCaldasTheme.dorado;
-      case 'request_rejected':
-      case 'admin_transfer_rejected': return '#dc3545';
-      case 'new_event': return '#9b59b6';
-      default: return '#666';
-    }
+    const severity = getNotificationSeverity(type);
+    return SEVERITY_COLORS[severity].icon;
   };
 
   return (
@@ -138,12 +131,20 @@ const NotificationCenter = () => {
                   <Text style={styles.emptyText}>No tienes notificaciones pendientes</Text>
                 </View>
               ) : (
-                notifications.map((notif) => (
-                  <Pressable
-                    key={notif.id}
-                    onPress={() => handleNotificationClick(notif)}
-                    style={[styles.notifItem, !notif.read && styles.unreadItem]}
-                  >
+                notifications.map((notif) => {
+                  const severity = getNotificationSeverity(notif.type);
+                  const severityColors = SEVERITY_COLORS[severity];
+                  
+                  return (
+                    <Pressable
+                      key={notif.id}
+                      onPress={() => handleNotificationClick(notif)}
+                      style={[
+                        styles.notifItem,
+                        !notif.read && styles.unreadItem,
+                        { backgroundColor: !notif.read ? severityColors.bg : '#fff' }
+                      ]}
+                    >
                     <View style={styles.itemIconContainer}>
                       <Ionicons name={getIconName(notif.type)} size={18} color={getIconColor(notif.type)} />
                     </View>
@@ -176,7 +177,8 @@ const NotificationCenter = () => {
 
                     {!notif.read && <View style={styles.unreadDot} />}
                   </Pressable>
-                ))
+                );
+                })
               )}
             </ScrollView>
 
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   unreadItem: {
-    backgroundColor: '#f0f7ff',
+    // backgroundColor aplicado dinámicamente según severidad
   },
   itemIconContainer: {
     width: 36,

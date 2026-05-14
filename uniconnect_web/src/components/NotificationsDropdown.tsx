@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell } from 'lucide-react'
 import { useNotifications } from '../hooks/useNotifications'
+import { getNotificationSeverity, SEVERITY_COLORS } from '@uniconnect/shared'
 
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -89,14 +90,17 @@ export default function NotificationsDropdown() {
                 const metaType = n.metadata?.type as string | undefined
                 const groupId = n.metadata?.groupId as string | undefined
                 const isUnread = n.status === 'unread'
+                const severity = getNotificationSeverity(metaType)
+                const severityColor = SEVERITY_COLORS[severity]
 
                 return (
                   <button
                     key={n.id}
                     onClick={() => handleNotifClick(n.id, groupId)}
-                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${
+                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors border-l-4 ${
                       isUnread ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     }`}
+                    style={{ borderLeftColor: severityColor.border }}
                   >
                     <div className="flex items-start gap-2">
                       <span className="text-base flex-shrink-0 mt-0.5">
