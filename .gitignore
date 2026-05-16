@@ -43,3 +43,4 @@ openspec/
 *.md
 !README.md
 
+*.tsbuildinfo
