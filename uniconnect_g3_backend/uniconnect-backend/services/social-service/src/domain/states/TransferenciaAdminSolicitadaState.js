@@ -4,6 +4,9 @@ class TransferenciaAdminSolicitadaState extends IMembershipState {
   constructor(subject) {
     super(subject);
   }
+  isExitLocked(context, currentUserId) {
+    return currentUserId === context.requesterId;
+  }
 
   async aceptarTransferencia(context) {
     const TransferenciaAdminAceptadaState = require('./TransferenciaAdminAceptadaState');

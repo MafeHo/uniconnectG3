@@ -26,26 +26,61 @@ class GetGroupById {
       role: members.find(m => m.userId === u.id)?.role || 'student'
     }));
 
-    let userStatus = 'none';
+    let dbStatus = 'none';
+    let requesterId = null;
+
     if (userId) {
-      if (group.creatorId === userId) {
-        userStatus = 'admin';
+      if (group.pendingAdminTransfer && group.pendingAdminTransfer.status === 'pending' && (group.creatorId === userId || group.pendingAdminTransfer.candidateId === userId)) {
+        dbStatus = 'transfer_pending';
+        requesterId = group.pendingAdminTransfer.requesterId;
+      } else if (group.creatorId === userId) {
+        dbStatus = 'admin';
       } else if (memberIds.includes(userId)) {
-        userStatus = 'member';
+        dbStatus = 'member';
       } else {
         // Check for pending/rejected requests
         const request = await this.groupRequestRepo.findByGroupAndUser(groupId, userId);
         if (request) {
-          userStatus = request.status || 'pending';
+          dbStatus = request.status || 'pending';
         }
       }
+    }
+
+    const SolicitudIngresoState = require('../../../domain/states/SolicitudIngresoState');
+    const MiembroAceptadoState = require('../../../domain/states/MiembroAceptadoState');
+    const TransferenciaAdminSolicitadaState = require('../../../domain/states/TransferenciaAdminSolicitadaState');
+    const MiembroRechazadoState = require('../../../domain/states/MiembroRechazadoState');
+    
+    class GroupContext {
+      constructor(status, reqId) {
+        this.requesterId = reqId;
+        switch (status) {
+          case 'pending': this.state = new SolicitudIngresoState(null); break;
+          case 'member':
+          case 'admin': this.state = new MiembroAceptadoState(null); break;
+          case 'transfer_pending': this.state = new TransferenciaAdminSolicitadaState(null); break;
+          case 'rejected': this.state = new MiembroRechazadoState(null); break;
+          default: this.state = null;
+        }
+      }
+      getState() { return this.state; }
+    }
+
+    const context = new GroupContext(dbStatus, requesterId);
+    let userStatus = dbStatus === 'none' ? 'none' : 'Desconocido';
+    let isExitLocked = false;
+
+    if (context.getState()) {
+      userStatus = context.getState().getFriendlyName();
+      isExitLocked = context.getState().isExitLocked(context, userId);
     }
 
     return {
       ...group,
       subjectName,
       members: memberDetails,
-      userStatus
+      userStatus,
+      isExitLocked
     };
   }
 }
