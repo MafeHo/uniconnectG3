@@ -1,4 +1,5 @@
-const { GroupEvents } = require('../../../domain/observer/ISubject');
+const GroupMember = require('../../../domain/GroupMember');
+const TransferenciaAdminSolicitadaState = require('../../../domain/states/TransferenciaAdminSolicitadaState');
 
 class HandleAdminTransferResponse {
   constructor(groupRepo, groupMemberRepo, userRepo, db, subject) {
@@ -11,81 +12,41 @@ class HandleAdminTransferResponse {
 
   async execute(groupId, candidateId, action) {
     const group = await this.groupRepo.findById(groupId);
-    if (!group || !group.pendingAdminTransfer) {
-      throw new Error('NO_PENDING_TRANSFER');
-    }
+    const transfer = group ? group.pendingAdminTransfer : null;
+    const requesterId = transfer ? transfer.requesterId : null;
 
-    const transfer = group.pendingAdminTransfer;
-
-    if (transfer.candidateId !== candidateId) {
-      throw new Error('NOT_AUTHORIZED');
-    }
-
-    const candidate = await this.userRepo.findById(candidateId);
-    const candidateName = candidate ? (candidate.name || candidate.displayName || 'El candidato') : 'El candidato';
+    // 1. Reconstruir al candidato con el estado de transferencia pendiente
+    const member = new GroupMember({
+      groupId,
+      userId: candidateId,
+      state: new TransferenciaAdminSolicitadaState(this.subject)
+    });
 
     if (action === 'accept') {
-      // Ejecutar transferencia atómica
-      await this.db.runTransaction(async (transaction) => {
-        const groupRef = this.db.collection('groups').doc(groupId);
-        
-        // 1. Cambiar el creador del grupo
-        transaction.update(groupRef, { 
-          creatorId: candidateId,
-          pendingAdminTransfer: null 
+      // 2. Delegar la transición al estado (lanzará error si el estado no lo permite)
+      await member.aceptarTransferencia();
+
+      // 3. Persistencia: Solo se guarda si la transición al estado final fue exitosa
+      if (member.state.constructor.name === 'TransferenciaAdminAceptadaState') {
+        await this.db.runTransaction(async (transaction) => {
+          const groupRef = this.db.collection('groups').doc(groupId);
+          transaction.update(groupRef, { creatorId: candidateId, pendingAdminTransfer: null });
+
+          const candidateMember = await this.groupMemberRepo.getRefsByGroupAndUser(groupId, candidateId);
+          if (candidateMember) transaction.update(candidateMember.ref, { role: 'admin' });
+
+          if (requesterId) {
+            const oldAdminMember = await this.groupMemberRepo.getRefsByGroupAndUser(groupId, requesterId);
+            if (oldAdminMember) transaction.delete(oldAdminMember.ref);
+          }
         });
 
-        // 2. Actualizar rol del nuevo admin
-        const candidateMember = await this.groupMemberRepo.getRefsByGroupAndUser(groupId, candidateId);
-        if (candidateMember) {
-          transaction.update(candidateMember.ref, { role: 'admin' });
-        }
-
-        // 3. Sacar al antiguo admin del grupo
-        const oldAdminMember = await this.groupMemberRepo.getRefsByGroupAndUser(groupId, transfer.requesterId);
-        if (oldAdminMember) {
-          transaction.delete(oldAdminMember.ref);
-        }
-      });
-
-      // Notificar al antiguo admin que el candidato aceptó
-      if (this.subject) {
-        this.subject.notify(GroupEvents.TRANSFERENCIA_ADMIN_ACEPTADA, {
-          targetUserId: transfer.requesterId,
-          groupId: group.id,
-          groupName: group.name,
-          userName: candidateName
-        });
-
-        // También notificar al nuevo admin (opcional, pero buena práctica)
-        this.subject.notify(GroupEvents.TRANSFERENCIA_ADMIN, {
-          targetUserId: candidateId,
-          groupId: group.id,
-          groupName: group.name
-        });
+        return { success: true, message: 'Transferencia completada. Estado: TransferenciaAdminAceptadaState' };
       }
-
-      return { success: true, message: 'Transferencia completada. Ahora eres el administrador.' };
-
     } else if (action === 'reject') {
-      // Limpiar la solicitud pendiente
-      await this.groupRepo.update(groupId, {
-        pendingAdminTransfer: null
-      });
-
-      // Notificar al administrador que fue rechazada
-      if (this.subject) {
-        this.subject.notify(GroupEvents.TRANSFERENCIA_ADMIN_RECHAZADA, {
-          targetUserId: transfer.requesterId,
-          groupId: group.id,
-          groupName: group.name,
-          userName: candidateName
-        });
-      }
-
+      // Simplemente limpiamos la base de datos para el rechazo
+      await this.groupRepo.update(groupId, { pendingAdminTransfer: null });
       return { success: true, message: 'Solicitud de transferencia rechazada.' };
-    } else {
-      throw new Error('INVALID_ACTION');
     }
   }
 }

@@ -1,4 +1,5 @@
-const { GroupEvents } = require('../../../domain/observer/ISubject');
+const GroupMember = require('../../../domain/GroupMember');
+const SolicitudIngresoState = require('../../../domain/states/SolicitudIngresoState');
 
 class HandleRequestAction {
   constructor(groupMemberRepo, groupRequestRepo, groupRepo, subject) {
@@ -9,9 +10,24 @@ class HandleRequestAction {
   }
 
   async execute(groupId, requestId, status) {
-    const group = await this.groupRepo.findById(groupId);
-    
+    // 1. Reconstruir la entidad de contexto con su estado inicial
+    const member = new GroupMember({
+      groupId,
+      userId: requestId,
+      state: new SolicitudIngresoState(this.subject)
+    });
+
+    // 2. Ejecutar la acción en el dominio (sin if/else lógicos de negocio)
     if (status === 'accepted') {
+      await member.aceptarSolicitud();
+    } else {
+      await member.rechazarSolicitud();
+    }
+
+    // 3. Persistencia y Consistencia basada en el estado final del objeto
+    const finalState = member.state.constructor.name;
+
+    if (finalState === 'MiembroAceptadoState') {
       await this.groupMemberRepo.add({
         groupId,
         userId: requestId,
@@ -19,29 +35,11 @@ class HandleRequestAction {
         joinedAt: new Date()
       });
       await this.groupRequestRepo.updateStatus(groupId, requestId, 'accepted');
-      
-      // Notificar al usuario que fue aceptado
-      if (this.subject && group) {
-        this.subject.notify(GroupEvents.MIEMBRO_ACEPTADO, {
-          targetUserId: requestId,
-          groupId: group.id,
-          groupName: group.name
-        });
-      }
-    } else {
+    } else if (finalState === 'MiembroRechazadoState') {
       await this.groupRequestRepo.updateStatus(groupId, requestId, 'rejected');
-      
-      // Notificar al usuario que fue rechazado
-      if (this.subject && group) {
-        this.subject.notify(GroupEvents.MIEMBRO_RECHAZADO, {
-          targetUserId: requestId,
-          groupId: group.id,
-          groupName: group.name
-        });
-      }
     }
 
-    return { message: `Solicitud ${status} correctamente` };
+    return { message: `Solicitud procesada. Estado actual: ${finalState}` };
   }
 }
 
