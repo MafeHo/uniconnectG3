@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell } from 'lucide-react'
 import { useNotifications } from '../hooks/useNotifications'
-import { getNotificationSeverity, SEVERITY_COLORS } from '@uniconnect/shared'
+import { useAuthStore, getNotificationSeverity, SEVERITY_COLORS } from '@uniconnect/shared'
 import { apiClient } from '../main'
 
 function relativeTime(dateStr: string): string {
@@ -34,9 +34,11 @@ function notifIcon(type: string, metaType?: string): string {
 
 export default function NotificationsDropdown() {
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const { notifications, unreadCount, markRead, markAllRead, reload } = useNotifications()
   const [open, setOpen] = useState(false)
   const [actingId, setActingId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -55,29 +57,26 @@ export default function NotificationsDropdown() {
     if (groupId) navigate(`/groups/${groupId}`)
   }
 
-  const handleAdminTransferAction = async (n: any, action: 'accept' | 'reject') => {
+  const handleAdminTransferAction = useCallback(async (n: any, action: 'accept' | 'reject') => {
     const groupId = n.metadata?.groupId as string | undefined
-    if (!groupId) return
+    if (!groupId || !user?.uid) return
     setActingId(n.id)
+    setActionError(null)
     try {
       await apiClient.getAxiosInstance().post(`/api/groups/${groupId}/transfer-admin/response`, {
-        candidateId: n.userId,
+        candidateId: user.uid,
         action,
       })
-      await apiClient.getAxiosInstance().patch(`/api/notifications/${n.id}/read`)
       await markRead(n.id)
       reload?.()
-      if (action === 'accept') {
-        setTimeout(() => alert('Has aceptado ser administrador del grupo. ¡Felicidades!'), 100)
-      } else {
-        setTimeout(() => alert('Has rechazado la transferencia de administración.'), 100)
-      }
-    } catch {
-      setTimeout(() => alert(`No se pudo ${action === 'accept' ? 'aceptar' : 'rechazar'} la transferencia`), 100)
+      setActionError(null)
+    } catch (err: unknown) {
+      const msg = (err as any)?.response?.data?.message || (err as any)?.response?.data?.error || ''
+      setActionError(msg || `No se pudo ${action === 'accept' ? 'aceptar' : 'rechazar'} la transferencia`)
     } finally {
       setActingId(null)
     }
-  }
+  }, [user?.uid, markRead, reload])
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -171,31 +170,36 @@ export default function NotificationsDropdown() {
 
                         {/* Admin transfer action buttons */}
                         {(metaType === 'admin_transfer' || metaType === 'admin_transfer_requested') && groupId && (
-                          <div className="flex gap-2 mt-2">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleAdminTransferAction(n, 'accept') }}
-                              disabled={actingId === n.id}
-                              className="flex-1 py-1.5 text-xs bg-[#002344] text-white rounded-lg hover:bg-[#002344]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                            >
-                              {actingId === n.id ? (
-                                <>
-                                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                  </svg>
-                                  Procesando...
-                                </>
-                              ) : (
-                                <>✓ Aceptar</>
-                              )}
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleAdminTransferAction(n, 'reject') }}
-                              disabled={actingId === n.id}
-                              className="flex-1 py-1.5 text-xs border border-[#dc2626] text-[#dc2626] rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                            >
-                              {actingId === n.id ? '...' : '✗ Rechazar'}
-                            </button>
+                          <div className="flex flex-col gap-2 mt-2">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleAdminTransferAction(n, 'accept') }}
+                                disabled={actingId === n.id}
+                                className="flex-1 py-1.5 text-xs bg-[#002344] text-white rounded-lg hover:bg-[#002344]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                              >
+                                {actingId === n.id ? (
+                                  <>
+                                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                    Procesando...
+                                  </>
+                                ) : (
+                                  <>✓ Aceptar</>
+                                )}
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleAdminTransferAction(n, 'reject') }}
+                                disabled={actingId === n.id}
+                                className="flex-1 py-1.5 text-xs border border-[#dc2626] text-[#dc2626] rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                              >
+                                {actingId === n.id ? '...' : '✗ Rechazar'}
+                              </button>
+                            </div>
+                            {actionError && (
+                              <p className="text-xs text-red-600 dark:text-red-400">{actionError}</p>
+                            )}
                           </div>
                         )}
                       </div>

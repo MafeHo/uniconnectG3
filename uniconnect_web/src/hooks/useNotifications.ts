@@ -52,8 +52,15 @@ export function useNotifications() {
         },
       }))
       setNotifications(mapped)
-    } catch {
-      // non-critical — fall back to Firestore
+    } catch (err) {
+      // Notification service puede fallar (cuota Firestore, etc.)
+      // Silenciar errores 500 — el Firestore listener cubre el fallback
+      const status = (err as any)?.response?.status
+      if (status && status >= 500) {
+        // Error del servidor — no loguear, usar fallback
+      } else {
+        console.warn('[useNotifications] Error loading notifications:', err)
+      }
     }
   }, [user?.uid])
 
