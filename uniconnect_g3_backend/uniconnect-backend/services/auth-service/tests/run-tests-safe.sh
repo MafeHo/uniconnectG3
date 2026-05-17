@@ -18,8 +18,8 @@ if [ "$NODE_ENV" = "production" ]; then
 fi
 
 # Verificar Firestore Emulator
-if ! nc -z localhost 8080 2>/dev/null; then
-  echo "❌ ERROR: Firestore Emulator no está corriendo en localhost:8080"
+if ! nc -z localhost 8085 2>/dev/null; then
+  echo "❌ ERROR: Firestore Emulator no está corriendo en localhost:8085"
   echo ""
   echo "Abre otro terminal y ejecuta:"
   echo "  firebase emulators:start --only firestore"
@@ -27,12 +27,12 @@ if ! nc -z localhost 8080 2>/dev/null; then
   exit 1
 fi
 
-echo "✓ Firestore Emulator corriendo en localhost:8080"
+echo "✓ Firestore Emulator corriendo en localhost:8085"
 
 # Configurar ambiente seguro
 export NODE_ENV=test
 export FIREBASE_TEST_PROJECT_ID=test-project
-export FIRESTORE_EMULATOR_HOST=localhost:8080
+export FIRESTORE_EMULATOR_HOST=localhost:8085
 
 echo "════════════════════════════════════════════════════════"
 echo "Configuración de tests:"

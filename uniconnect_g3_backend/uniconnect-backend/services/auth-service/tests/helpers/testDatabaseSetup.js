@@ -19,7 +19,7 @@ class TestDatabaseSetup {
     if (!emulatorHost || (!emulatorHost.includes('localhost') && !emulatorHost.includes('127.0.0.1'))) {
       throw new Error(
         'FALLO CRÍTICO: FIRESTORE_EMULATOR_HOST no apunta a localhost. ' +
-        'Esto podría conectar a producción. Configura: FIRESTORE_EMULATOR_HOST=localhost:8080'
+        'Esto podría conectar a producción. Configura: FIRESTORE_EMULATOR_HOST=localhost:8085'
       );
     }
 
@@ -145,7 +145,7 @@ class TestDatabaseSetup {
       throw new Error(
         'FALLO CRÍTICO: Firestore Emulator no está configurado. ' +
         'Ejecuta primero: firebase emulators:start --only firestore ' +
-        'Luego configura: FIRESTORE_EMULATOR_HOST=localhost:8080'
+        'Luego configura: FIRESTORE_EMULATOR_HOST=localhost:8085'
       );
     }
 
