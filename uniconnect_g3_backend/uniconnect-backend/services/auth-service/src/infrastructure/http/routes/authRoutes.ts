@@ -1,14 +1,23 @@
-const express = require('express');
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
-const { authMiddleware } = require('../middlewares/authMiddleware');
+import express, { Router, Request, Response } from 'express';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
+import { verifyJwtCookie } from '../middlewares/verifyJwtCookie';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { AuthController } from '../controllers/authController';
+import { asyncHandler } from '../middlewares/errorMiddleware';
 
-function createAuthRoutes() {
+interface PassportUser {
+  uid: string;
+  name: string;
+  email: string;
+}
+
+export function createAuthRoutes(authController: AuthController): Router {
   const router = express.Router();
 
   // Iniciar flujo OAuth
   router.get('/google', (req, res, next) => {
-    const redirectTarget = req.query.redirect;
+    const redirectTarget = req.query.redirect as string | undefined;
     passport.authenticate('google', {
       scope: ['profile', 'email'],
       state: redirectTarget,
@@ -18,8 +27,8 @@ function createAuthRoutes() {
 
   // Callback de Google
   router.get('/google/callback', (req, res, next) => {
-    passport.authenticate('google', { session: false }, (err, user, info) => {
-      const state = req.query.state; // 'web' o expoUrl
+    passport.authenticate('google', { session: false }, (err: Error | null, user: PassportUser | false | null, _info: unknown) => {
+      const state = req.query.state as string | undefined; // 'web' o expoUrl
 
       if (err || !user) {
         if (state === 'web') {
@@ -29,11 +38,10 @@ function createAuthRoutes() {
       }
 
       // Generamos el JWT firmado tanto para Web como para Móvil.
-      // La validación estricta de @ucaldas.edu.co ya fue aplicada por el strategy de Passport.
       const token = jwt.sign(
         { uid: user.uid, name: user.name, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        process.env.JWT_SECRET || 'fallback_secret',
+        { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as jwt.SignOptions['expiresIn'] }
       );
 
       if (state === 'web') {
@@ -48,25 +56,20 @@ function createAuthRoutes() {
       }
 
       // Origen Móvil (state es la url de Expo ej: exp://...)
-      // NOTA: Este token será capturado por el frontend móvil para ser almacenado de manera segura en SecureStore (US-M01)
       res.redirect(`${state}?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&uid=${encodeURIComponent(user.uid)}`);
     })(req, res, next);
   });
 
-  router.get('/me', authMiddleware, (req, res) => {
-    res.json({
-      uid: req.user.uid,
-      name: req.user.name,
-      email: req.user.email
-    });
-  });
+  router.get('/me', verifyJwtCookie, asyncHandler((req: Request, res: Response) => authController.checkSession(req as AuthenticatedRequest, res)));
 
-  router.post('/logout', (req, res) => {
+  router.post('/logout', (_req, res) => {
     res.clearCookie('uniconnect_token', { httpOnly: true, sameSite: 'none', secure: true });
     res.json({ message: 'Sesión cerrada' });
   });
 
+  // Nuevas rutas tradicionales con validación de Zod
+  router.post('/login', asyncHandler((req: Request, res: Response) => authController.login(req, res)));
+  router.post('/register', asyncHandler((req: Request, res: Response) => authController.register(req, res)));
+
   return router;
 }
-
-module.exports = createAuthRoutes;

@@ -1,21 +1,22 @@
 class LoggerSingleton {
+  private static instance: LoggerSingleton;
+  private levels = {
+    INFO: 'INFO',
+    DEBUG: 'DEBUG',
+    WARNING: 'WARNING',
+    ERROR: 'ERROR',
+    CRITICAL: 'CRITICAL'
+  };
+
   constructor() {
     if (LoggerSingleton.instance) {
       return LoggerSingleton.instance;
     }
 
-    this.levels = {
-      INFO: 'INFO',
-      DEBUG: 'DEBUG',
-      WARNING: 'WARNING',
-      ERROR: 'ERROR',
-      CRITICAL: 'CRITICAL'
-    };
-
     LoggerSingleton.instance = this;
   }
 
-  _formatMessage(level, message, meta) {
+  private _formatMessage(level: string, message: string, meta?: unknown) {
     const timestamp = new Date().toISOString();
     let msg = `[${timestamp}] [${level}] ${message}`;
     if (meta) {
@@ -28,26 +29,26 @@ class LoggerSingleton {
     return msg;
   }
 
-  info(message, meta = null) {
+  info(message: string, meta: unknown = null) {
     console.log(this._formatMessage(this.levels.INFO, message, meta));
   }
 
-  debug(message, meta = null) {
+  debug(message: string, meta: unknown = null) {
     // Podría deshabilitarse en producción
     if (process.env.NODE_ENV !== 'production') {
       console.debug(this._formatMessage(this.levels.DEBUG, message, meta));
     }
   }
 
-  warning(message, meta = null) {
+  warning(message: string, meta: unknown = null) {
     console.warn(this._formatMessage(this.levels.WARNING, message, meta));
   }
 
-  error(message, errorOrMeta = null) {
+  error(message: string, errorOrMeta: unknown = null) {
     console.error(this._formatMessage(this.levels.ERROR, message, errorOrMeta));
   }
 
-  critical(message, errorOrMeta = null) {
+  critical(message: string, errorOrMeta: unknown = null) {
     // Aquí se podrían añadir alertas por correo, slack, etc.
     console.error(this._formatMessage(this.levels.CRITICAL, ` CRITICAL  - ${message}`, errorOrMeta));
   }
@@ -55,4 +56,4 @@ class LoggerSingleton {
 
 const logger = new LoggerSingleton();
 
-module.exports = logger;
+export default logger;

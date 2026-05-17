@@ -1,13 +1,24 @@
-// src/infrastructure/http/middlewares/authMiddleware.js
-const jwt = require('jsonwebtoken');
+import { Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 
-const authMiddleware = (req, res, next) => {
+export interface DecodedUser {
+  uid: string;
+  name: string;
+  email: string;
+  [key: string]: unknown;
+}
+
+export interface AuthenticatedRequest {
+  user?: DecodedUser;
+}
+
+export const authMiddleware = (req: any, res: Response, next: NextFunction) => {
   // 1. Intentar obtener el token de las cookies (Web)
   let token = req.cookies?.uniconnect_token;
 
   // 2. Si no hay cookie, intentar obtenerlo del header Authorization (Móvil)
   if (!token) {
-    const authHeader = req.headers?.authorization || req.headers?.Authorization;
+    const authHeader = (req.headers?.authorization || req.headers?.Authorization) as string | undefined;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split('Bearer ')[1];
     }
@@ -24,7 +35,7 @@ const authMiddleware = (req, res, next) => {
 
   // 4. Verificar el JWT usando la misma firma para Web y Móvil
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as DecodedUser;
     req.user = decoded; // Adjuntar payload decodificado al req.user
     next();
   } catch (error) {
@@ -35,5 +46,3 @@ const authMiddleware = (req, res, next) => {
     });
   }
 };
-
-module.exports = { authMiddleware };

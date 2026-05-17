@@ -3,14 +3,14 @@
  * CRÍTICO: En tests, USA EMULADOR. En producción, USA BD REAL.
  */
 
-const admin = require('firebase-admin');
+import * as admin from 'firebase-admin';
 
-class DatabaseFactory {
+export class DatabaseFactory {
   /**
    * Obtiene la instancia correcta de BD según el ambiente
-   * @returns {object} Instancia de Firestore
+   * @returns {admin.firestore.Firestore} Instancia de Firestore
    */
-  static getDatabase() {
+  static getDatabase(): admin.firestore.Firestore {
     // En ambiente de testing, usar Firestore Emulator
     if (process.env.NODE_ENV === 'test') {
       return this._getTestDatabase();
@@ -24,7 +24,7 @@ class DatabaseFactory {
    * Obtiene BD de producción (credenciales reales)
    * @private
    */
-  static _getProductionDatabase() {
+  private static _getProductionDatabase(): admin.firestore.Firestore {
     if (!admin.apps.length) {
       const projectId = process.env.FIREBASE_PROJECT_ID;
       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -71,7 +71,7 @@ class DatabaseFactory {
    * PROTECCIÓN: Si falla, lanza error en lugar de conectar a producción
    * @private
    */
-  static _getTestDatabase() {
+  private static _getTestDatabase(): admin.firestore.Firestore {
     const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST;
 
     if (!emulatorHost) {
@@ -90,7 +90,7 @@ class DatabaseFactory {
     }
 
     // Limpiar apps previas
-    admin.apps.forEach(app => app.delete());
+    admin.apps.forEach(app => app?.delete());
 
     // Inicializar solo con projectId (Emulator no necesita credenciales)
     admin.initializeApp(
@@ -111,5 +111,3 @@ class DatabaseFactory {
     return db;
   }
 }
-
-module.exports = DatabaseFactory;
