@@ -36,7 +36,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "globalSetup": "./jest.setup.js",
+    "setupFiles": [
+      "./jest.setup.js"
+    ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],

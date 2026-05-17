@@ -28,7 +28,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "globalSetup": "./jest.setup.js",
+    "setupFiles": [
+      "./jest.setup.js"
+    ],
     "socket.io": "^4.8.3",
     "axios": "^1.6.8"
   }
