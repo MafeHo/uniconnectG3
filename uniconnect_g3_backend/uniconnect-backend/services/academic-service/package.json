@@ -1,5 +1,5 @@
 {
-  "name": "academic-service",
+  "name": "@uniconnect/academic-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@uniconnect/shared": "workspace:^",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

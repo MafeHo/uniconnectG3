@@ -1,5 +1,5 @@
 {
-  "name": "social-service",
+  "name": "@uniconnect/social-service",
   "version": "1.0.0",
   "description": "Servicio de gestión de grupos y eventos - UniConnect",
   "main": "index.js",
@@ -14,6 +14,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@uniconnect/shared": "workspace:^",
     "axios": "^1.15.2",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
