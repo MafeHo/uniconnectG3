@@ -9,7 +9,8 @@
   "scripts": {
     "install-all": "npm install",
     "dev": "concurrently -n \"GATEWAY,AUTH,USER,SOCIAL,CHAT,ACAD,NOTIF\" -c \"magenta,blue,green,yellow,cyan,white,red\" \"npm run dev --workspace=gateway\" \"npm run dev --workspace=services/auth-service\" \"npm run dev --workspace=services/user-service\" \"npm run dev --workspace=services/social-service\" \"npm run dev --workspace=services/chat-service\" \"npm run dev --workspace=services/academic-service\" \"npm run dev --workspace=services/notification-service\"",
-    "test": "cross-env NODE_ENV=test firebase emulators:exec \"jest --verbose\""
+    "test": "cross-env NODE_ENV=test firebase emulators:exec \"jest --verbose\"",
+    "test:coverage": "cross-env NODE_ENV=test firebase emulators:exec \"jest --coverage\""
   },
   "license": "ISC",
   "type": "commonjs",
