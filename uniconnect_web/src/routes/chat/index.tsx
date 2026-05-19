@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '@uniconnect/shared'
 import { useLocation } from 'react-router-dom'
 import { subscribeToUserChats, db, type FirestoreChat } from '../../lib/firestore'
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore'
 import { chatAxios } from '../../lib/chatClient'
 import { MessageCircle, Search, Send, Paperclip, FileText, FileImage, FileArchive, File, X, Smile } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -109,7 +109,7 @@ export default function ChatsPage() {
     if (!selectedChat) return
     
     const messagesRef = collection(db, 'chats', selectedChat.id, 'messages')
-    const q = query(messagesRef, orderBy('createdAt', 'asc'))
+    const q = query(messagesRef, orderBy('createdAt', 'asc'), limit(50))
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map(doc => ({

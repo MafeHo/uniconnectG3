@@ -38,7 +38,7 @@ export default function NotificationsDropdown() {
   const { notifications, unreadCount, markRead, markAllRead, reload } = useNotifications()
   const [open, setOpen] = useState(false)
   const [actingId, setActingId] = useState<string | null>(null)
-  const [actionError, setActionError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<Record<string, string>>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -61,22 +61,31 @@ export default function NotificationsDropdown() {
     const groupId = n.metadata?.groupId as string | undefined
     if (!groupId || !user?.uid) return
     setActingId(n.id)
-    setActionError(null)
+    setActionError(prev => ({ ...prev, [n.id]: '' }))
     try {
       await apiClient.getAxiosInstance().post(`/api/groups/${groupId}/transfer-admin/response`, {
         candidateId: user.uid,
         action,
       })
-      await markRead(n.id)
-      reload?.()
-      setActionError(null)
+
+      // Cerrar dropdown PRIMERO para evitar DOM conflicts con markRead
+      setOpen(false)
+
+      // Deferir markRead hasta después de que el dropdown se desmonte
+      requestAnimationFrame(() => {
+        markRead(n.id)
+      })
+
+      if (action === 'accept') {
+        navigate(`/groups/${groupId}`)
+      }
     } catch (err: unknown) {
       const msg = (err as any)?.response?.data?.message || (err as any)?.response?.data?.error || ''
-      setActionError(msg || `No se pudo ${action === 'accept' ? 'aceptar' : 'rechazar'} la transferencia`)
+      setActionError(prev => ({ ...prev, [n.id]: msg || `No se pudo ${action === 'accept' ? 'aceptar' : 'rechazar'} la transferencia` }))
     } finally {
       setActingId(null)
     }
-  }, [user?.uid, markRead, reload])
+  }, [user?.uid, markRead, navigate])
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -197,8 +206,8 @@ export default function NotificationsDropdown() {
                                 {actingId === n.id ? '...' : '✗ Rechazar'}
                               </button>
                             </div>
-                            {actionError && (
-                              <p className="text-xs text-red-600 dark:text-red-400">{actionError}</p>
+                            {actionError[n.id] && (
+                              <p className="text-xs text-red-600 dark:text-red-400">{actionError[n.id]}</p>
                             )}
                           </div>
                         )}

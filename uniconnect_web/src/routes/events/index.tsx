@@ -114,7 +114,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
-  // Cargar datos iniciales
+  // Cargar datos iniciales (categorías, eventos, suscripciones) — una sola vez
   useEffect(() => {
     const load = async () => {
       if (!user?.uid) return
@@ -136,26 +136,6 @@ export default function EventsPage() {
     }
     load()
   }, [user?.uid])
-
-  // Filtrar eventos por categoría seleccionada
-  useEffect(() => {
-    const load = async () => {
-      if (!user?.uid) return
-      setLoading(true)
-      try {
-        const url = selectedCategory
-          ? `/api/events?category=${selectedCategory}`
-          : '/api/events'
-        const res = await apiClient.getAxiosInstance().get(url)
-        setEvents(res.data ?? [])
-      } catch (err) {
-        console.error('Error cargando eventos:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [selectedCategory, user?.uid])
 
   const isSubscribed = (categoryId: string) => subscribedCategories.includes(categoryId)
 
@@ -182,16 +162,19 @@ export default function EventsPage() {
     }
   }
 
-  // Agrupar eventos por categoría
+  // Agrupar eventos por categoría — filtrado client-side por selectedCategory
   const eventsByCategory = useMemo(() => {
+    const filtered = selectedCategory
+      ? events.filter(e => e.type === selectedCategory)
+      : events
     const groups: Record<string, Event[]> = {}
-    events.forEach(event => {
+    filtered.forEach(event => {
       const type = event.type ?? 'General'
       if (!groups[type]) groups[type] = []
       groups[type].push(event)
     })
     return groups
-  }, [events])
+  }, [events, selectedCategory])
 
   const getEventsByCategory = (categoryName: string) => eventsByCategory[categoryName] ?? []
 

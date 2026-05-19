@@ -115,6 +115,7 @@ export default function EventFeed() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
+  // Cargar datos iniciales — una sola vez
   useEffect(() => {
     const load = async () => {
       if (!user?.uid) return
@@ -140,23 +141,6 @@ export default function EventFeed() {
     load()
   }, [user?.uid])
 
-  useEffect(() => {
-    const load = async () => {
-      if (!user?.uid) return
-      setLoading(true)
-      try {
-        const res = await eventApi.getEvents(selectedCategory ?? undefined)
-        const evts = Array.isArray(res) ? res : (res as any)?.data ?? []
-        setEvents(evts)
-      } catch (err) {
-        console.error('Error cargando eventos:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [selectedCategory, user?.uid])
-
   const isSubscribed = (categoryId: string) => subscribedCategories.includes(categoryId)
 
   const handleToggleSubscription = async (categoryId: string) => {
@@ -178,14 +162,17 @@ export default function EventFeed() {
   }
 
   const eventsByCategory = useMemo(() => {
+    const filtered = selectedCategory
+      ? events.filter(e => e.type === selectedCategory)
+      : events
     const groups: Record<string, Event[]> = {}
-    events.forEach(event => {
+    filtered.forEach(event => {
       const type = event.type ?? 'General'
       if (!groups[type]) groups[type] = []
       groups[type].push(event)
     })
     return groups
-  }, [events])
+  }, [events, selectedCategory])
 
   if (loading) {
     return (

@@ -3,7 +3,7 @@ import { useAuthStore } from '@uniconnect/shared'
 import { apiClient } from '../main'
 import { useNotifSocket } from '../context/SocketContext'
 import { db } from '../lib/firestore'
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, orderBy, onSnapshot, limit } from 'firebase/firestore'
 
 export interface AppNotification {
   id: string
@@ -71,7 +71,8 @@ export function useNotifications() {
     const q = query(
       collection(db, 'notifications'),
       where('targetUserId', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
+      limit(20)
     )
 
     const unsub = onSnapshot(q, (snapshot) => {
@@ -102,13 +103,6 @@ export function useNotifications() {
 
     return () => unsub()
   }, [user?.uid])
-
-  // Carga inicial + polling fallback
-  useEffect(() => {
-    load()
-    const interval = setInterval(load, 30_000)
-    return () => clearInterval(interval)
-  }, [load])
 
   // Tiempo real: escucha evento 'notification' del social-service (puerto 3003)
   // WebSocketNotificationObserver.js emite: io.to(userId).emit('notification', { type, groupId, groupName, message })

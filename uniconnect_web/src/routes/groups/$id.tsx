@@ -10,6 +10,7 @@ import Spinner from '../../components/Spinner'
 import AddMemberModal from '../../components/groups/AddMemberModal'
 import TransferAdminModal from '../../components/groups/TransferAdminModal'
 import { useGroupPendingTransfer } from '../../hooks/useGroupPendingTransfer'
+import { useNotifSocket } from '../../context/SocketContext'
 import {
   Users, ArrowLeft, Calendar, Check, X,
   LayoutDashboard, MessageSquare, ClipboardList,
@@ -579,6 +580,7 @@ export default function GroupDetailPage() {
   const hasPendingRequest = group?.userStatus === 'pending'
 
   const pendingTransfer = useGroupPendingTransfer(id)
+  const notifSocket = useNotifSocket()
 
   // Load group
   useEffect(() => {
@@ -591,6 +593,19 @@ export default function GroupDetailPage() {
       .catch(() => setError('No se pudo cargar el grupo'))
       .finally(() => setLoading(false))
   }, [id, user?.uid])
+
+  // Listen for admin transfer completion via WebSocket (zero Firestore reads)
+  // When the candidate accepts, social-service emits a notification event
+  useEffect(() => {
+    if (!id || !user?.uid || !pendingTransfer) return
+    const handler = (data: { type: string; groupId?: string }) => {
+      if (data.groupId === id && (data.type === 'TRANSFERENCIA_ADMIN_ACEPTADA' || data.type === 'admin_transfer_accepted')) {
+        navigate('/groups')
+      }
+    }
+    notifSocket?.on('notification', handler)
+    return () => { notifSocket?.off('notification', handler) }
+  }, [id, user?.uid, pendingTransfer, notifSocket, navigate])
 
   // Load pending requests (admin only)
   useEffect(() => {

@@ -16,7 +16,6 @@ export default function SearchPage() {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('all')
   const [pendingSubjectId, setPendingSubjectId] = useState<string>('all')
   const [showFilters, setShowFilters] = useState(false)
-  const [creatorNames, setCreatorNames] = useState<Record<string, string>>({})
 
   // Build subject map from profile's subjects
   const subjectMap = useMemo(() => {
@@ -48,23 +47,6 @@ export default function SearchPage() {
         )
         const loadedGroups = response.data || []
         setGroups(loadedGroups)
-
-        // Load creator names
-        const creatorIds = [...new Set(loadedGroups.map(g => g.creatorId).filter(Boolean))]
-        const names: Record<string, string> = {}
-        
-        await Promise.all(
-          creatorIds.map(async (uid) => {
-            try {
-              const res = await apiClient.getAxiosInstance().get(`/api/academic-profile/${uid}`)
-              names[uid] = res.data?.userName ?? res.data?.name ?? 'Desconocido'
-            } catch {
-              names[uid] = 'Desconocido'
-            }
-          })
-        )
-        
-        setCreatorNames(names)
       } catch (e: any) {
         console.error('Error loading groups:', e)
         setError('No se pudieron cargar los grupos')
@@ -256,7 +238,6 @@ export default function SearchPage() {
               key={group.id} 
               group={group} 
               subjectName={subjectMap[group.subjectId]}
-              creatorName={creatorNames[group.creatorId]}
             />
           ))}
         </div>

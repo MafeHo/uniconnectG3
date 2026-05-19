@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore, useUserStore, type AcademicProfile, type Career, type Section } from '@uniconnect/shared';
 import { apiClient } from '../main';
 
@@ -28,6 +28,9 @@ export const useProfile = (externalUserId?: string) => {
 
   const targetUid = externalUserId || user?.uid;
   const isExternal = !!externalUserId && externalUserId !== user?.uid;
+  
+  // Track if we've already fetched profile to prevent infinite loops
+  const hasFetchedRef = useRef(false);
 
   // Load profile from store or fetch if not loaded
   useEffect(() => {
@@ -43,8 +46,9 @@ export const useProfile = (externalUserId?: string) => {
       }
 
       // Only fetch if not loaded yet and we have a user
-      if (!targetUid || profileLoaded) return;
+      if (!targetUid || profileLoaded || hasFetchedRef.current) return;
 
+      hasFetchedRef.current = true;
       setLoading(true);
       try {
         const [profileRes, careersRes] = await Promise.all([
@@ -105,7 +109,7 @@ export const useProfile = (externalUserId?: string) => {
     };
 
     loadProfile();
-  }, [targetUid, profileLoaded, profile, isExternal, setProfile, setProfileLoaded]);
+  }, [targetUid, profileLoaded, isExternal, setProfile, setProfileLoaded]);
 
   // Load careers separately if not loaded
   useEffect(() => {
