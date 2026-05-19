@@ -19,12 +19,12 @@ function relativeTime(dateStr: string): string {
 
 function notifIcon(type: string, metaType?: string): string {
   if (type === 'group') {
-    if (metaType === 'group_request') return '🔔'
-    if (metaType === 'request_accepted') return '✅'
-    if (metaType === 'request_rejected') return '❌'
-    if (metaType === 'admin_transfer' || metaType === 'admin_transfer_requested') return '🔑'
-    if (metaType === 'admin_transfer_accepted') return '🤝'
-    if (metaType === 'admin_transfer_rejected') return '↩️'
+    if (metaType === 'group_request') return ''
+    if (metaType === 'request_accepted') return ''
+    if (metaType === 'request_rejected') return ''
+    if (metaType === 'admin_transfer' || metaType === 'admin_transfer_requested') return ''
+    if (metaType === 'admin_transfer_accepted') return ''
+    if (metaType === 'admin_transfer_rejected') return ''
     return '👥'
   }
   if (type === 'chat') return '💬'

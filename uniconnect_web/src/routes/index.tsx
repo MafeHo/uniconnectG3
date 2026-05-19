@@ -9,11 +9,10 @@ export default function HomePage() {
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Welcome header */}
       {isAuthenticated && (
-        <div className="bg-gradient-to-r from-[#002344] to-[#003366] rounded-xl p-6 text-white">
-          <h1 className="text-2xl font-bold">
-            Bienvenido a UniConnect, {user?.name ?? 'Usuario'} 👋
-          </h1>
-          <p className="text-white/70 text-sm mt-1">Descubre lo que está pasando en la U de Caldas</p>
+        <div className="text-center py-6">
+          <p className="text-2xl font-bold text-[#002344]">Universidad de Caldas</p>
+          <h1 className="text-lg font-medium text-gray-700 mt-1">Bienvenido a UniConnect</h1>
+          <p className="text-lg text-gray-600 mt-2">{user?.name ?? 'Usuario'}</p>
         </div>
       )}
 
