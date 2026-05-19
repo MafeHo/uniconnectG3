@@ -1,11 +1,12 @@
 {
-  "name": "user-service",
+  "name": "@uniconnect/user-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "cross-env TS_NODE_COMPILER_OPTIONS=\"{\\\"ignoreDeprecations\\\":\\\"6.0\\\"}\" ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc --ignoreDeprecations 6.0",
+    "start": "node dist/index.js",
     "test:unit": "cross-env NODE_ENV=test jest tests/unit --runInBand --forceExit"
   },
   "keywords": [],
@@ -13,9 +14,22 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@uniconnect/api-types": "workspace:^",
+    "@uniconnect/shared": "workspace:^",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "firebase-admin": "^13.7.0"
+    "firebase-admin": "^13.7.0",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.8.0",
+    "cross-env": "^7.0.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^6.0.3"
   }
 }

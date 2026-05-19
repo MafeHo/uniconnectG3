@@ -2,3 +2,5 @@ packages:
   - 'packages/*'
   - 'uniconnect_web'
   - 'uniconnect_g3'
+  - 'uniconnect_g3_backend/uniconnect-backend/gateway'
+  - 'uniconnect_g3_backend/uniconnect-backend/services/*'

@@ -1,0 +1,3316 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "UniConnect API",
+    "version": "1.0.0",
+    "description": "Documentación oficial y viva de los contratos API para UniConnect Monorepo G3"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "API Gateway"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Ocurrió un error genérico"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Error400": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Solicitud incorrecta o parámetros inválidos"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Error401": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "No autorizado - Token inválido o ausente"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Error404": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Recurso no encontrado"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Error500": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Ocurrió un error en el servidor interno"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "example": 20
+          },
+          "totalCount": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 150
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 8
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "example": true
+          },
+          "hasPrevPage": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "page",
+          "limit",
+          "totalCount",
+          "totalPages",
+          "hasNextPage",
+          "hasPrevPage"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "lastLogin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "biography": {
+            "type": "string"
+          },
+          "showEmail": {
+            "type": "boolean"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "studyPreference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid",
+          "name",
+          "email"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 2
+          },
+          "career": {
+            "type": "string"
+          },
+          "semester": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "displayName"
+        ]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "uid": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "lastLogin": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "biography": {
+                "type": "string"
+              },
+              "showEmail": {
+                "type": "boolean"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "age": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "studyPreference": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "uid",
+              "name",
+              "email"
+            ]
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "token"
+        ]
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "photoURL": {
+            "type": "string",
+            "format": "uri"
+          },
+          "lastLogin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "biography": {
+            "type": "string"
+          },
+          "showEmail": {
+            "type": "boolean"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "studyPreference": {
+            "type": "string"
+          },
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "careerId": {
+            "type": "string"
+          },
+          "careerName": {
+            "type": "string"
+          },
+          "facultyId": {
+            "type": "string"
+          },
+          "facultyName": {
+            "type": "string"
+          },
+          "academicLevelId": {
+            "type": "string"
+          },
+          "academicLevelName": {
+            "type": "string"
+          },
+          "formationLevelId": {
+            "type": "string"
+          },
+          "formationLevelName": {
+            "type": "string"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subjectNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mappingId": {
+            "type": "string"
+          },
+          "estadisticas": {
+            "type": "object",
+            "properties": {
+              "gruposCreados": {
+                "type": "number",
+                "default": 0
+              },
+              "gruposParticipa": {
+                "type": "number",
+                "default": 0
+              },
+              "mensajesEnviados": {
+                "type": "number",
+                "default": 0
+              }
+            }
+          },
+          "insignias": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "uid",
+          "name",
+          "email"
+        ]
+      },
+      "AcademicProfile": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string"
+          },
+          "mappingId": {
+            "type": "string"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "studentId"
+        ]
+      },
+      "Estadisticas": {
+        "type": "object",
+        "properties": {
+          "gruposCreados": {
+            "type": "number",
+            "default": 0
+          },
+          "gruposParticipa": {
+            "type": "number",
+            "default": 0
+          },
+          "mensajesEnviados": {
+            "type": "number",
+            "default": 0
+          }
+        }
+      },
+      "UpsertProfileRequest": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "biography": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "phone": {
+            "type": "string"
+          },
+          "showEmail": {
+            "type": "boolean"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "studyPreference": {
+            "type": "string"
+          },
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "careerId": {
+            "type": "string"
+          },
+          "careerName": {
+            "type": "string"
+          },
+          "facultyId": {
+            "type": "string"
+          },
+          "facultyName": {
+            "type": "string"
+          },
+          "academicLevelId": {
+            "type": "string"
+          },
+          "academicLevelName": {
+            "type": "string"
+          },
+          "formationLevelId": {
+            "type": "string"
+          },
+          "formationLevelName": {
+            "type": "string"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subjectNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mappingId": {
+            "type": "string"
+          }
+        }
+      },
+      "SearchStudentsResponse": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "uid": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "photoURL": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "lastLogin": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "biography": {
+                  "type": "string"
+                },
+                "showEmail": {
+                  "type": "boolean"
+                },
+                "phone": {
+                  "type": "string"
+                },
+                "age": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "studyPreference": {
+                  "type": "string"
+                },
+                "interests": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "careerId": {
+                  "type": "string"
+                },
+                "careerName": {
+                  "type": "string"
+                },
+                "facultyId": {
+                  "type": "string"
+                },
+                "facultyName": {
+                  "type": "string"
+                },
+                "academicLevelId": {
+                  "type": "string"
+                },
+                "academicLevelName": {
+                  "type": "string"
+                },
+                "formationLevelId": {
+                  "type": "string"
+                },
+                "formationLevelName": {
+                  "type": "string"
+                },
+                "subjects": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "subjectNames": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "mappingId": {
+                  "type": "string"
+                },
+                "estadisticas": {
+                  "type": "object",
+                  "properties": {
+                    "gruposCreados": {
+                      "type": "number",
+                      "default": 0
+                    },
+                    "gruposParticipa": {
+                      "type": "number",
+                      "default": 0
+                    },
+                    "mensajesEnviados": {
+                      "type": "number",
+                      "default": 0
+                    }
+                  }
+                },
+                "insignias": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "uid",
+                "name",
+                "email"
+              ]
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "users",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "chatId": {
+            "type": "string"
+          },
+          "senderId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "file",
+              "system"
+            ]
+          },
+          "fileURL": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileSize": {
+            "type": "number",
+            "nullable": true
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readBy": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reactions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "id",
+          "chatId",
+          "senderId",
+          "content",
+          "type",
+          "createdAt"
+        ]
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "file",
+              "system"
+            ],
+            "default": "text"
+          },
+          "fileURL": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileSize": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "CreateChatRequest": {
+        "type": "object",
+        "properties": {
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2
+          }
+        },
+        "required": [
+          "participants"
+        ]
+      },
+      "CreateChatResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "chat": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "participants": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "lastMessage": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "participants",
+              "updatedAt"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "chat"
+        ]
+      },
+      "AddReactionRequest": {
+        "type": "object",
+        "properties": {
+          "reaction": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "reaction"
+        ]
+      },
+      "Chat": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lastMessage": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "participants",
+          "updatedAt"
+        ]
+      },
+      "ChatSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "Faculty": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Career": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "facultyId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "facultyId"
+        ]
+      },
+      "Subject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sectionId": {
+            "type": "string"
+          },
+          "credits": {
+            "type": "number"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "AcademicLevel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "FormationLevel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "default": {}
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "eventType": {
+            "type": "string",
+            "default": "GENERAL"
+          },
+          "action": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "endpoint": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "label",
+              "endpoint"
+            ]
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "title",
+          "body",
+          "type"
+        ]
+      },
+      "NotifyRequest": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "SOLICITUD_INGRESO",
+              "SOLICITUD_ACEPTADA",
+              "SOLICITUD_RECHAZADA",
+              "TRANSFER_ADMIN",
+              "TRANSFER_ADMIN_SOLICITADA",
+              "TRANSFER_ADMIN_ACEPTADA",
+              "TRANSFER_ADMIN_RECHAZADA",
+              "MENCION",
+              "NUEVO_EVENTO"
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          }
+        },
+        "required": [
+          "event",
+          "payload"
+        ]
+      },
+      "Group": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "subjectId": {
+            "type": "string"
+          },
+          "subjectName": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "maxMembers": {
+            "type": "number"
+          },
+          "adminId": {
+            "type": "string"
+          },
+          "membersCount": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isPrivate",
+          "maxMembers",
+          "adminId",
+          "membersCount"
+        ]
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "organizerId": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "date",
+          "location",
+          "organizerId",
+          "categoryId"
+        ]
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "CreateGroupRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "subjectId": {
+            "type": "string"
+          },
+          "subjectName": {
+            "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "default": false
+          },
+          "maxMembers": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 100,
+            "default": 50
+          },
+          "adminId": {
+            "type": "string"
+          },
+          "rules": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "name",
+          "adminId"
+        ]
+      },
+      "JoinGroupRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "userId",
+          "userName"
+        ]
+      },
+      "HandleJoinRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACEPTADA",
+              "RECHAZADA"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "TransferAdminRequest": {
+        "type": "object",
+        "properties": {
+          "adminId": {
+            "type": "string"
+          },
+          "newAdminId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "adminId",
+          "newAdminId"
+        ]
+      },
+      "AdminTransferResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACEPTADA",
+              "RECHAZADA"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateEventRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "date": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "organizerId": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "date",
+          "location",
+          "organizerId",
+          "categoryId"
+        ]
+      },
+      "SubscribeCategoryRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "categoryId"
+        ]
+      },
+      "RequestAdminTransfer": {
+        "type": "object",
+        "properties": {
+          "adminId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "candidateId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "adminId",
+          "candidateId"
+        ]
+      },
+      "AddMemberRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "userName": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "userId",
+          "userName"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Iniciar sesión",
+        "tags": [
+          "Autenticación"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sesión iniciada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales inválidas"
+          },
+          "404": {
+            "description": "Usuario no registrado en la base de datos"
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Registrar nuevo usuario",
+        "tags": [
+          "Autenticación"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado y autenticado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error en validación de datos o dominio de correo no permitido"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Cerrar sesión",
+        "tags": [
+          "Autenticación"
+        ],
+        "responses": {
+          "200": {
+            "description": "Sesión cerrada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Obtener información de la sesión actual",
+        "tags": [
+          "Autenticación"
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario autenticado recuperado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado o token inválido"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      }
+    },
+    "/api/users/profile/{studentId}": {
+      "get": {
+        "summary": "Obtener perfil del estudiante",
+        "tags": [
+          "Perfiles"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del estudiante"
+            },
+            "required": true,
+            "name": "studentId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil recuperado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Perfil de estudiante no encontrado"
+          }
+        }
+      }
+    },
+    "/api/users/profile/estadisticas/{studentId}": {
+      "get": {
+        "summary": "Obtener perfil decorado con estadísticas del estudiante",
+        "tags": [
+          "Perfiles"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del estudiante"
+            },
+            "required": true,
+            "name": "studentId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil decorado recuperado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Estudiante no encontrado"
+          }
+        }
+      }
+    },
+    "/api/users/profile": {
+      "post": {
+        "summary": "Crear o actualizar perfil del estudiante",
+        "tags": [
+          "Perfiles"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Perfil creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/search": {
+      "get": {
+        "summary": "Buscar estudiantes con filtros",
+        "tags": [
+          "Búsqueda"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Búsqueda por nombre o correo"
+            },
+            "required": false,
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la carrera para filtrar"
+            },
+            "required": false,
+            "name": "career",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true,
+              "description": "Semestre para filtrar"
+            },
+            "required": false,
+            "name": "semester",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true,
+              "default": 1,
+              "description": "Número de página"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true,
+              "default": 20,
+              "description": "Límite de resultados"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultados de búsqueda recuperados exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchStudentsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats": {
+      "post": {
+        "summary": "Crear un nuevo chat privado o grupal",
+        "tags": [
+          "Chats"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Chat creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateChatResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats/{chatId}/messages": {
+      "post": {
+        "summary": "Enviar mensaje de texto a un chat",
+        "tags": [
+          "Mensajería"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del chat o grupo"
+            },
+            "required": true,
+            "name": "chatId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mensaje enviado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Obtener historial de mensajes de un chat",
+        "tags": [
+          "Mensajería"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del chat o grupo"
+            },
+            "required": true,
+            "name": "chatId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true,
+              "default": 50,
+              "description": "Cantidad de mensajes a recuperar"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Timestamp o ID para paginación hacia atrás"
+            },
+            "required": false,
+            "name": "before",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial de mensajes recuperado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "chatId": {
+                        "type": "string"
+                      },
+                      "senderId": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "text",
+                          "image",
+                          "file",
+                          "system"
+                        ]
+                      },
+                      "fileURL": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "fileName": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "fileSize": {
+                        "type": "number",
+                        "nullable": true
+                      },
+                      "createdAt": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "readBy": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "reactions": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "chatId",
+                      "senderId",
+                      "content",
+                      "type",
+                      "createdAt"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats/{chatId}/files": {
+      "post": {
+        "summary": "Enviar un archivo/imagen a un chat",
+        "tags": [
+          "Mensajería"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del chat"
+            },
+            "required": true,
+            "name": "chatId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Archivo a subir (imagen, PDF, etc)"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Archivo subido y mensaje creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats/{chatId}/messages/{messageId}/reactions": {
+      "post": {
+        "summary": "Agregar reacción a un mensaje",
+        "tags": [
+          "Mensajería"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del chat"
+            },
+            "required": true,
+            "name": "chatId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del mensaje"
+            },
+            "required": true,
+            "name": "messageId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reacción agregada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/group-chats/{groupId}/messages": {
+      "post": {
+        "summary": "Enviar mensaje de texto a un chat grupal",
+        "tags": [
+          "Chats de Grupo"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mensaje enviado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/group-chats/{groupId}/files": {
+      "post": {
+        "summary": "Enviar un archivo/imagen a un chat grupal",
+        "tags": [
+          "Chats de Grupo"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Archivo a subir (imagen, PDF, etc)"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Archivo subido y mensaje creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/group-chats/{groupId}/messages/{messageId}/reactions": {
+      "post": {
+        "summary": "Agregar reacción a un mensaje de chat grupal",
+        "tags": [
+          "Chats de Grupo"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del mensaje"
+            },
+            "required": true,
+            "name": "messageId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reacción agregada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/hierarchy/faculties": {
+      "get": {
+        "summary": "Obtener todas las facultades",
+        "tags": [
+          "Académico"
+        ],
+        "responses": {
+          "200": {
+            "description": "Facultades recuperadas exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Faculty"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/hierarchy/academic-levels/{facultyId}": {
+      "get": {
+        "summary": "Obtener niveles académicos por facultad",
+        "tags": [
+          "Académico"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la facultad"
+            },
+            "required": true,
+            "name": "facultyId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Niveles académicos recuperados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AcademicLevel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/hierarchy/formation-levels/{facultyId}/{academicLevelId}": {
+      "get": {
+        "summary": "Obtener niveles de formación por facultad y nivel académico",
+        "tags": [
+          "Académico"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la facultad"
+            },
+            "required": true,
+            "name": "facultyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del nivel académico"
+            },
+            "required": true,
+            "name": "academicLevelId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Niveles de formación recuperados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FormationLevel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/hierarchy/careers-by-path/{facultyId}/{academicLevelId}/{formationLevelId}": {
+      "get": {
+        "summary": "Obtener carreras según ruta académica",
+        "tags": [
+          "Académico"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la facultad"
+            },
+            "required": true,
+            "name": "facultyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del nivel académico"
+            },
+            "required": true,
+            "name": "academicLevelId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del nivel de formación"
+            },
+            "required": true,
+            "name": "formationLevelId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Carreras recuperadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Career"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/careers/careers": {
+      "get": {
+        "summary": "Obtener lista de todas las carreras",
+        "tags": [
+          "Académico"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista completa de carreras recuperada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Career"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/subjects/subjects": {
+      "get": {
+        "summary": "Obtener lista de todas las asignaturas",
+        "tags": [
+          "Académico"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de asignaturas recuperada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Subject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/career-structure/{careerId}": {
+      "get": {
+        "summary": "Obtener la estructura académica de una carrera",
+        "tags": [
+          "Académico"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la carrera"
+            },
+            "required": true,
+            "name": "careerId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estructura académica recuperada"
+          }
+        }
+      }
+    },
+    "/api/notifications/notify": {
+      "post": {
+        "summary": "Emitir una notificación de evento",
+        "tags": [
+          "Notificaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notificación procesada y enviada"
+          }
+        }
+      }
+    },
+    "/api/notifications/{userId}": {
+      "get": {
+        "summary": "Obtener notificaciones de un usuario",
+        "tags": [
+          "Notificaciones"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true,
+              "default": 20,
+              "description": "Cantidad máxima de notificaciones a recuperar"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notificaciones recuperadas exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notification"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications/{userId}/unread-count": {
+      "get": {
+        "summary": "Obtener cantidad de notificaciones no leídas",
+        "tags": [
+          "Notificaciones"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cantidad de notificaciones no leídas recuperada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "unreadCount": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "unreadCount"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications/{id}/read": {
+      "patch": {
+        "summary": "Marcar una notificación como leída",
+        "tags": [
+          "Notificaciones"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la notificación"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "description": "ID del usuario para validar permisos"
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notificación marcada como leída exitosamente"
+          }
+        }
+      }
+    },
+    "/api/notifications/user/{userId}/read-all": {
+      "patch": {
+        "summary": "Marcar todas las notificaciones de un usuario como leídas",
+        "tags": [
+          "Notificaciones"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Todas las notificaciones marcadas como leídas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups": {
+      "post": {
+        "summary": "Crear un nuevo grupo de estudio",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Grupo creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Group"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Buscar grupos con filtros",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "subjectId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Lista de IDs de asignaturas del usuario separadas por comas"
+            },
+            "required": false,
+            "name": "userSubjectIds",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario que busca"
+            },
+            "required": false,
+            "name": "userId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Búsqueda exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Group"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/check-name/{name}": {
+      "get": {
+        "summary": "Verificar si el nombre de grupo está disponible",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Nombre del grupo a verificar"
+            },
+            "required": true,
+            "name": "name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disponibilidad devuelta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "isUnique": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "isUnique"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/user/{userId}": {
+      "get": {
+        "summary": "Obtener los grupos de estudio de un usuario",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filtrar por rol: admin o member"
+            },
+            "required": false,
+            "name": "role",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Grupos devueltos con éxito",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Group"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/{id}": {
+      "get": {
+        "summary": "Obtener detalles de un grupo por ID",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario para verificar si es miembro"
+            },
+            "required": false,
+            "name": "userId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del grupo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Group"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Grupo no encontrado"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/requests": {
+      "post": {
+        "summary": "Enviar solicitud de unión al grupo",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solicitud enviada exitosamente"
+          }
+        }
+      },
+      "get": {
+        "summary": "Obtener solicitudes pendientes de ingreso a un grupo",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de solicitudes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/requests/{requestId}": {
+      "put": {
+        "summary": "Aceptar o rechazar una solicitud de ingreso",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la solicitud"
+            },
+            "required": true,
+            "name": "requestId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HandleJoinRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Acción procesada con éxito"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/requests/{userId}": {
+      "delete": {
+        "summary": "Eliminar solicitud de unión de un usuario",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Solicitud eliminada"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/members": {
+      "post": {
+        "summary": "Agregar miembro directamente a un grupo",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Miembro agregado exitosamente"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/members/{userId}": {
+      "delete": {
+        "summary": "Eliminar un miembro de un grupo",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del miembro a eliminar"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del administrador que realiza la acción"
+            },
+            "required": true,
+            "name": "adminId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Miembro eliminado con éxito"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/leave/{userId}": {
+      "delete": {
+        "summary": "Salir voluntariamente de un grupo de estudio",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Salida exitosa"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/transfer-admin": {
+      "put": {
+        "summary": "Ceder administración de forma directa",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferAdminRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Administración cedida"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/transfer-admin/request": {
+      "post": {
+        "summary": "Solicitar transferencia de administración a un miembro",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestAdminTransfer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solicitud de transferencia enviada exitosamente"
+          }
+        }
+      }
+    },
+    "/api/groups/{id}/transfer-admin/response": {
+      "post": {
+        "summary": "Aceptar o rechazar solicitud de transferencia de administración",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTransferResponse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta procesada"
+          }
+        }
+      }
+    },
+    "/api/groups/{groupId}/available-students": {
+      "get": {
+        "summary": "Obtener estudiantes disponibles para agregar al grupo",
+        "tags": [
+          "Social - Grupos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estudiantes disponibles recuperados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "summary": "Obtener lista de eventos universitarios",
+        "tags": [
+          "Social - Eventos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filtrar por ID de categoría"
+            },
+            "required": false,
+            "name": "category",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de eventos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Event"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear un nuevo evento universitario",
+        "tags": [
+          "Social - Eventos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Evento creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events/categories": {
+      "get": {
+        "summary": "Obtener todas las categorías de eventos",
+        "tags": [
+          "Social - Eventos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Categorías devueltas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events/suscribir": {
+      "post": {
+        "summary": "Suscribirse a una categoría de eventos",
+        "tags": [
+          "Social - Eventos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscribeCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Suscripción exitosa"
+          },
+          "409": {
+            "description": "Suscripción duplicada"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancelar suscripción a una categoría",
+        "tags": [
+          "Social - Eventos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "userId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "categoryId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Cancelación exitosa"
+          }
+        }
+      }
+    },
+    "/api/events/suscripciones/{userId}": {
+      "get": {
+        "summary": "Obtener las categorías suscritas de un estudiante",
+        "tags": [
+          "Social - Eventos"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de Firebase del usuario"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de suscripciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

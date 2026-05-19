@@ -1,11 +1,12 @@
 {
-  "name": "social-service",
+  "name": "@uniconnect/social-service",
   "version": "1.0.0",
   "description": "Servicio de gestión de grupos y eventos - UniConnect",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "cross-env TS_NODE_COMPILER_OPTIONS=\"{\\\"ignoreDeprecations\\\":\\\"6.0\\\"}\" ts-node-dev --respawn --transpile-only index.ts",
+    "build": "tsc --ignoreDeprecations 6.0",
+    "start": "node dist/index.js",
     "test": "cross-env NODE_ENV=test jest --forceExit --detectOpenHandles",
     "test:verbose": "cross-env NODE_ENV=test jest --verbose --forceExit"
   },
@@ -14,24 +15,33 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@uniconnect/api-types": "workspace:^",
+    "@uniconnect/shared": "workspace:^",
     "axios": "^1.15.2",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "firebase-admin": "^13.7.0",
-    "socket.io": "^4.8.3"
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.8.3",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/node": "^22.13.4",
     "cross-env": "^7.0.3",
     "jest": "^29.7.0",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.4.9",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^6.0.3"
   },
   "jest": {
+    "preset": "ts-jest",
     "testEnvironment": "node",
-    "setupFiles": [
-      "./jest.setup.js"
-    ],
-    "socket.io": "^4.8.3",
-    "axios": "^1.6.8"
+    "globalSetup": "./jest.setup.js"
   }
 }

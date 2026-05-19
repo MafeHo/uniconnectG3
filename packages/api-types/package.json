@@ -1,0 +1,23 @@
+{
+  "name": "@uniconnect/api-types",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "Contratos API y tipos autogenerados para UniConnect",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "generate:types": "ts-node scripts/generate-types.ts",
+    "prebuild": "pnpm run generate:types",
+    "build": "tsc -b",
+    "clean": "rm -rf dist src/generated"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.5.2",
+    "typescript": "^5.7.3",
+    "ts-node": "^10.9.2",
+    "@types/node": "^22.13.4"
+  }
+}

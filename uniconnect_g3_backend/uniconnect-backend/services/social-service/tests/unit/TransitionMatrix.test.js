@@ -1,4 +1,4 @@
-const Group = require('../../src/domain/Group');
+const { Group } = require('../../src/domain/Group');
 const { TransicionInvalidaError } = require('../../src/domain/Group');
 
 // Simulación de la entidad Task para cumplir con los criterios de prueba localmente

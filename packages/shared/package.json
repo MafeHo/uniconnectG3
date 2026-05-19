@@ -8,31 +8,38 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./types": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/types/index.js"
+      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
     },
     "./api": {
       "types": "./dist/api/index.d.ts",
-      "import": "./dist/api/index.js"
+      "import": "./dist/api/index.js",
+      "default": "./dist/api/index.js"
     },
     "./stores": {
       "types": "./dist/stores/index.d.ts",
-      "import": "./dist/stores/index.js"
+      "import": "./dist/stores/index.js",
+      "default": "./dist/stores/index.js"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js"
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     },
     "./validators": {
       "types": "./dist/validators/index.d.ts",
-      "import": "./dist/validators/index.js"
+      "import": "./dist/validators/index.js",
+      "default": "./dist/validators/index.js"
     },
     "./navigation": {
       "types": "./dist/navigation/useAppNavigation.d.ts",
-      "import": "./dist/navigation/useAppNavigation.js"
+      "import": "./dist/navigation/useAppNavigation.js",
+      "default": "./dist/navigation/useAppNavigation.js"
     }
   },
   "scripts": {

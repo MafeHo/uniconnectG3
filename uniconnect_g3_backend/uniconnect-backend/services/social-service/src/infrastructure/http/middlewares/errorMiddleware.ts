@@ -1,0 +1,54 @@
+import { Request, Response, NextFunction } from 'express';
+import logger from '../../../config/logger';
+import { ZodError } from 'zod';
+
+export const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+export const globalErrorHandler = (err: Error | any, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof ZodError) {
+    res.status(400).json({
+      error: true,
+      message: 'Datos de entrada inválidos',
+      details: err.errors.map(e => ({
+        field: e.path.join('.'),
+        message: e.message
+      }))
+    });
+    return;
+  }
+
+  const errorMap: Record<string, number> = {
+    'GROUP_NAME_ALREADY_EXISTS': 400,
+    'MISSING_FIELDS': 400,
+    'NAME_TOO_SHORT': 400,
+    'ALREADY_MEMBER': 400,
+    'REQUEST_ALREADY_EXISTS': 400,
+    'CANNOT_REMOVE_SELF': 400,
+    'NEW_ADMIN_NOT_FOUND': 400,
+    'SUBJECT_GROUP_LIMIT_REACHED': 400,
+    'NO_PENDING_TRANSFER': 400,
+    'CANDIDATE_NOT_A_MEMBER': 400,
+    'INVALID_ACTION': 400,
+    'NOT_AUTHORIZED': 403,
+    'PROFILE_NOT_FOUND': 404,
+    'GROUP_NOT_FOUND': 404,
+    'MEMBER_NOT_FOUND': 404,
+    'NOT_A_MEMBER': 404,
+    'STRUCTURE_NOT_FOUND': 404,
+  };
+
+  const status = errorMap[err.message] || 500;
+
+  if (status === 500) {
+    logger.critical(err.message || 'Error Interno del Servidor', err);
+  } else {
+    logger.warning(`Error esperado manejado: ${err.message}`);
+  }
+
+  res.status(status).json({
+    error: true,
+    message: err.message || "Internal Server Error"
+  });
+};

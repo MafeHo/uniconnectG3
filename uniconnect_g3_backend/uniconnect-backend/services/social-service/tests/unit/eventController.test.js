@@ -1,4 +1,4 @@
-const EventController = require('../../src/infrastructure/http/controllers/eventController');
+const { EventController } = require('../../src/infrastructure/http/controllers/eventController');
 
 describe('EventController - Pruebas Unitarias', () => {
   let controller;
