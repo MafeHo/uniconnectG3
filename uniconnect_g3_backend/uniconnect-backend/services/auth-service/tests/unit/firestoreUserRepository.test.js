@@ -1,4 +1,4 @@
-const FirestoreUserRepository = require('../../src/infrastructure/database/FirestoreUserRepository');
+const { FirestoreUserRepository } = require('../../src/infrastructure/database/FirestoreUserRepository');
 
 describe('FirestoreUserRepository - Unidad', () => {
   let repository;

@@ -1,4 +1,4 @@
-const DatabaseFactory = require('../../src/config/databaseFactory');
+const { DatabaseFactory } = require('../../src/config/databaseFactory');
 const TestDatabaseSetup = require('../helpers/testDatabaseSetup');
 const TokenBuilder = require('../helpers/tokenBuilder');
 const JWTValidator = require('../helpers/jwtValidator');

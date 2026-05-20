@@ -75,7 +75,7 @@ describe('Social Service - Criterio 4: Transferencia de Administración', () => 
 
         const notificationsSnapshot = await db.collection('notifications')
             .where('targetUserId', '==', nuevoAdminId)
-            .where('type', '==', 'TRANSFERENCIA_ADMIN')
+            .where('type', '==', 'group_update')
             .get();
 
         expect(notificationsSnapshot.empty).toBe(false);

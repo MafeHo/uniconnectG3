@@ -1,5 +1,15 @@
 import { z } from 'zod';
 
+export const GroupRoleSchema = z.enum(['admin', 'student', 'moderator', 'member']);
+
+export const GroupMemberSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  groupId: z.string().optional(),
+  role: GroupRoleSchema,
+  joinedAt: z.any().optional(), // Date or any in manual type
+});
+
 export const GroupCategorySchema = z.enum([
   'academic',
   'social',
@@ -12,30 +22,38 @@ export const GroupCategorySchema = z.enum([
 export const GroupPrivacySchema = z.enum(['public', 'private']);
 
 export const GroupSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(3).max(100),
-  description: z.string().min(10).max(500),
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
   imageURL: z.string().url().optional(),
-  category: GroupCategorySchema,
-  privacy: GroupPrivacySchema,
-  memberCount: z.number().int().min(0),
-  createdBy: z.string().uuid(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  category: GroupCategorySchema.optional(),
+  privacy: GroupPrivacySchema.optional(),
+  subjectId: z.string(),
+  creatorId: z.string(),
+  createdAt: z.date().or(z.any()),
+  updatedAt: z.date().or(z.any()),
+  
+  // Extended fields
+  subjectName: z.string().optional(),
+  memberCount: z.number().optional(),
+  members: z.array(GroupMemberSchema).optional(),
 });
 
 export const CreateGroupSchema = z.object({
-  name: z.string().min(3).max(100),
-  description: z.string().min(10).max(500),
+  name: z.string(),
+  description: z.string().optional(),
+  subjectId: z.string(),
+  creatorId: z.string(),
   imageURL: z.string().url().optional(),
-  category: GroupCategorySchema,
-  privacy: GroupPrivacySchema,
+  category: GroupCategorySchema.optional(),
+  privacy: GroupPrivacySchema.optional(),
 });
 
 export const UpdateGroupSchema = CreateGroupSchema.partial();
 
 export const GroupSearchSchema = z.object({
-  query: z.string().min(1).max(100).optional(),
+  query: z.string().optional(),
+  subjectId: z.string().optional(),
   category: GroupCategorySchema.optional(),
   privacy: GroupPrivacySchema.optional(),
   page: z.number().int().min(1).default(1),
@@ -43,6 +61,8 @@ export const GroupSearchSchema = z.object({
 });
 
 // Type inference
+export type Group = z.infer<typeof GroupSchema>;
+export type GroupMember = z.infer<typeof GroupMemberSchema>;
 export type GroupInput = z.infer<typeof GroupSchema>;
 export type CreateGroupInput = z.infer<typeof CreateGroupSchema>;
 export type UpdateGroupInput = z.infer<typeof UpdateGroupSchema>;

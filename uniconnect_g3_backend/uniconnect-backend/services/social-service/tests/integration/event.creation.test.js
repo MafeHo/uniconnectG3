@@ -26,9 +26,11 @@ describe('Event Services - Pruebas de Integración de Eventos', () => {
   it('debe permitir crear un evento de forma correcta', async () => {
     const newEvent = {
       title: 'Taller de Software 3',
-      type: 'Académico',
       description: 'Revisión de proyectos del semestre',
       date: '2026-05-15T10:00:00Z',
+      location: 'Sala de Conferencias B',
+      organizerId: 'org-123',
+      categoryId: 'cat-academia'
     };
 
     const response = await request(app)
@@ -53,8 +55,8 @@ describe('Event Services - Pruebas de Integración de Eventos', () => {
       .send(invalidEvent);
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('error');
-    expect(response.body.error).toContain('Faltan parámetros obligatorios');
+    expect(response.body).toHaveProperty('error', true);
+    expect(response.body.message).toContain('Datos de entrada inválidos');
   });
 
   // 3. Prueba de obtención de eventos

@@ -1,59 +1,7 @@
-// User types - Based on backend auth service + user service + academic profile
-export interface User {
-  // --- Auth service (obligatorios, llegan en el login) ---
-  uid: string;
-  name: string;
-  email: string;
-  lastLogin?: Date;
+import { User, UserProfile, AcademicInfo, SocialStats, Estadisticas } from '../validators/user.schema';
+import { Group, GroupMember } from '../validators/group.schema';
 
-  // --- User service (opcionales, llegan al sincronizar perfil) ---
-  biography?: string;
-  showEmail?: boolean;
-  phone?: string;
-  age?: number | string;
-  studyPreference?: string;
-
-  // --- Academic profile (opcionales, llegan al sincronizar perfil académico) ---
-  // From getFullProfile use case merge
-  careerId?: string;
-  careerName?: string;
-  facultyId?: string;
-  facultyName?: string;
-  academicLevelId?: string;
-  academicLevelName?: string;
-  formationLevelId?: string;
-  formationLevelName?: string;
-  subjects?: string[];
-  subjectNames?: string[];
-  mappingId?: string;
-  
-  // From decorated profile
-  estadisticas?: Estadisticas;
-  insignias?: string[];
-
-  // UI only - not from API
-  id?: string; // alias for uid for compatibility
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface UserProfile extends User {
-  academicInfo?: AcademicInfo;
-  socialStats?: SocialStats;
-}
-
-export interface AcademicInfo {
-  career: string;
-  semester: number;
-  faculty?: string;
-  enrollmentYear?: number;
-}
-
-export interface SocialStats {
-  groupsCount: number;
-  eventsCount: number;
-  connectionsCount: number;
-}
+export type { User, UserProfile, AcademicInfo, SocialStats, Estadisticas, Group, GroupMember };
 
 // Academic types - Based on backend user-service
 export interface Career {
@@ -74,11 +22,7 @@ export interface Section {
   subjects: Subject[];
 }
 
-export interface Estadisticas {
-  gruposCreados: number;
-  gruposParticipa: number;
-  mensajesEnviados: number;
-}
+
 
 // Backend returns from getFullProfile use case
 export interface AcademicProfile {
@@ -111,36 +55,8 @@ export interface EventCategory {
   description?: string;
 }
 
-// Group types - Based on backend social-service FirestoreGroupRepository
-export interface Group {
-  // Backend returns: id, name, subjectId, description, creatorId, createdAt, updatedAt
-  id: string;
-  name: string;
-  description?: string;
-  subjectId: string;
-  creatorId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  
-  // Extended fields (not from base API)
-  subjectName?: string;
-  memberCount?: number;
-  members?: GroupMember[];
-}
-
-export interface GroupMember {
-  id: string;
-  name?: string;
-  groupId?: string;
-  role: 'admin' | 'student';
-  joinedAt?: Date | any;
-}
-
-export enum GroupRole {
-  ADMIN = 'admin',
-  MODERATOR = 'moderator',
-  MEMBER = 'member'
-}
+// GroupRole now inferred from Zod
+export type GroupRole = 'admin' | 'student' | 'moderator' | 'member';
 
 // Event types - Based on backend social-service FirestoreEventRepository
 export interface Event {

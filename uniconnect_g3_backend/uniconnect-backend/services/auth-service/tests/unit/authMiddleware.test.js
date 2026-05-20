@@ -1,17 +1,18 @@
-const { verifyFirebaseToken } = require('../../src/infrastructure/http/middlewares/authMiddleware');
-const admin = require('firebase-admin');
-
-jest.mock('firebase-admin');
+const { authMiddleware } = require('../../src/infrastructure/http/middlewares/authMiddleware');
+const jwt = require('jsonwebtoken');
 
 describe('Auth Middleware - Unidad', () => {
   let mockReq;
   let mockRes;
   let mockNext;
+  let verifySpy;
 
   beforeEach(() => {
+    verifySpy = jest.spyOn(jwt, 'verify');
     jest.clearAllMocks();
 
     mockReq = {
+      cookies: {},
       headers: {
         authorization: 'Bearer mock-token'
       }
@@ -23,50 +24,66 @@ describe('Auth Middleware - Unidad', () => {
     };
 
     mockNext = jest.fn();
+    process.env.JWT_SECRET = 'test-secret-key';
   });
 
-  it('debería retornar 401 si no hay token en el header', async () => {
-    mockReq.headers.authorization = undefined;
+  afterEach(() => {
+    verifySpy.mockRestore();
+  });
 
-    await verifyFirebaseToken(mockReq, mockRes, mockNext);
+  it('debería retornar 401 si no hay token en cookies ni en el header', () => {
+    mockReq.headers.authorization = undefined;
+    mockReq.cookies.uniconnect_token = undefined;
+
+    authMiddleware(mockReq, mockRes, mockNext);
 
     expect(mockRes.status).toHaveBeenCalledWith(401);
-    expect(mockRes.json).toHaveBeenCalledWith({ message: 'No token provided' });
+    expect(mockRes.json).toHaveBeenCalledWith({ 
+      error: 'No autenticado', 
+      code: 'NO_TOKEN',
+      message: 'No se proveyó un token de sesión' 
+    });
     expect(mockNext).not.toHaveBeenCalled();
   });
 
-  it('debería retornar 401 si el token no tiene el formato correcto (sin Bearer)', async () => {
+  it('debería retornar 401 si el token no tiene el formato correcto (sin Bearer)', () => {
     mockReq.headers.authorization = 'InvalidTokenFormat';
 
-    await verifyFirebaseToken(mockReq, mockRes, mockNext);
+    authMiddleware(mockReq, mockRes, mockNext);
 
     expect(mockRes.status).toHaveBeenCalledWith(401);
-    expect(mockRes.json).toHaveBeenCalledWith({ message: 'No token provided' });
+    expect(mockRes.json).toHaveBeenCalledWith({ 
+      error: 'No autenticado', 
+      code: 'NO_TOKEN',
+      message: 'No se proveyó un token de sesión' 
+    });
     expect(mockNext).not.toHaveBeenCalled();
   });
 
-  it('debería llamar a next() si el token es válido y está autenticado en Firebase', async () => {
-    const mockDecodedToken = { uid: 'google_test_123', email: 'test@ucaldas.edu.co' };
+  it('debería llamar a next() si el token es válido usando JWT', () => {
+    const mockDecodedToken = { uid: 'user_123', email: 'test@ucaldas.edu.co' };
     
-    admin.auth = jest.fn().mockReturnValue({
-      verifyIdToken: jest.fn().mockResolvedValue(mockDecodedToken)
-    });
+    verifySpy.mockReturnValue(mockDecodedToken);
 
-    await verifyFirebaseToken(mockReq, mockRes, mockNext);
+    authMiddleware(mockReq, mockRes, mockNext);
 
     expect(mockReq.user).toEqual(mockDecodedToken);
     expect(mockNext).toHaveBeenCalled();
   });
 
-  it('debería retornar 401 si la verificación en Firebase falla', async () => {
-    admin.auth = jest.fn().mockReturnValue({
-      verifyIdToken: jest.fn().mockRejectedValue(new Error('Invalid token signature'))
+  it('debería retornar 401 si la verificación del JWT falla o expira', () => {
+    verifySpy.mockImplementation(() => {
+      throw new Error('JsonWebTokenError: invalid signature');
     });
 
-    await verifyFirebaseToken(mockReq, mockRes, mockNext);
+    authMiddleware(mockReq, mockRes, mockNext);
 
     expect(mockRes.status).toHaveBeenCalledWith(401);
-    expect(mockRes.json).toHaveBeenCalledWith({ message: 'Invalid token' });
+    expect(mockRes.json).toHaveBeenCalledWith({ 
+      error: 'Token inválido o expirado', 
+      code: 'INVALID_TOKEN',
+      message: 'La sesión ha expirado o el token es incorrecto' 
+    });
     expect(mockNext).not.toHaveBeenCalled();
   });
 });

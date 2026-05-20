@@ -1,4 +1,4 @@
-const EventController = require('../../src/infrastructure/http/controllers/eventController');
+const { EventController } = require('../../src/infrastructure/http/controllers/eventController');
 
 describe('EventController - Pruebas Unitarias', () => {
   let controller;
@@ -33,26 +33,28 @@ describe('EventController - Pruebas Unitarias', () => {
     jest.clearAllMocks();
   });
 
-  it('debe retornar error 400 si faltan parámetros obligatorios (title, type)', async () => {
+  it('debe retornar error si faltan parámetros obligatorios', async () => {
     req.body = {
       title: 'Taller de Software 3',
     };
+    const next = jest.fn();
 
-    await controller.createEvent(req, res);
+    await controller.createEvent(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      error: 'Faltan parámetros obligatorios (title, type)',
-    });
+    expect(next).toHaveBeenCalled();
+    const error = next.mock.calls[0][0];
+    expect(error.name).toBe('ZodError');
     expect(mockCreateEventUC.execute).not.toHaveBeenCalled();
   });
 
   it('debe llamar al caso de uso createEvent correctamente', async () => {
     req.body = {
       title: 'Taller de Software 3',
-      type: 'Académico',
       description: 'Revisión de proyectos',
       date: '2026-05-15T10:00:00Z',
+      location: 'Aula Virtual',
+      organizerId: 'org-456',
+      categoryId: 'cat-academia'
     };
 
     const mockEvent = { id: 'evento-123', ...req.body };

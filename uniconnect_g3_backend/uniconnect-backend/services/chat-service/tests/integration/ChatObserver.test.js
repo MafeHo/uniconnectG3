@@ -1,6 +1,6 @@
-const Chat = require('../../src/domain/Chat');
-const ChatSubject = require('../../src/application/observer/ChatSubject');
-const NotificationObserver = require('../../../notification-service/src/application/observers/NotificationObserver');
+const { Chat } = require('../../src/domain/Chat');
+const ChatSubject = require('../../src/application/observer/ChatSubject').default;
+const { NotificationObserver } = require('../../../notification-service/src/application/observers/NotificationObserver');
 const mockSendNotificationUseCase = {
   execute: jest.fn().mockResolvedValue(true)
 };
@@ -54,7 +54,7 @@ describe('ChatObserver - Test de Integración', () => {
           chatId: 'chat-123',
           type: 'private_message'
         },
-        type: 'chat'
+        type: 'private_message'
       })
     );
   });

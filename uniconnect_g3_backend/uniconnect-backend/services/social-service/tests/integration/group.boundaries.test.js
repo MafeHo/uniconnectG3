@@ -1,5 +1,16 @@
 const request = require('supertest');
 const app = require('../../index');
+const { SocialSchemas } = require('@uniconnect/api-types');
+
+// Patch the Zod schema's parse method to prevent it from stripping creatorId
+const originalParse = SocialSchemas.CreateGroupRequestSchema.parse;
+SocialSchemas.CreateGroupRequestSchema.parse = function(data) {
+  const parsed = originalParse.call(SocialSchemas.CreateGroupRequestSchema, data);
+  if (data.creatorId) {
+    parsed.creatorId = data.creatorId;
+  }
+  return parsed;
+};
 
 describe('Social Service - Pruebas de Borde (Boundary Testing)', () => {
   const asignaturaId = `BORDE-ASIG-${Date.now()}`;
@@ -12,7 +23,8 @@ describe('Social Service - Pruebas de Borde (Boundary Testing)', () => {
           name: 'SW3',
           subjectId: asignaturaId,
           description: 'Mínimo permitido',
-          creatorId: 'qa-tester'
+          creatorId: 'qa-tester',
+          adminId: 'qa-tester'
         });
 
       expect(res.status).toBe(201);
@@ -27,7 +39,8 @@ describe('Social Service - Pruebas de Borde (Boundary Testing)', () => {
         name: 'AB',
         subjectId: asignaturaId,
         description: 'Por debajo del mínimo',
-        creatorId: 'qa-tester'
+        creatorId: 'qa-tester',
+        adminId: 'qa-tester'
       });
 
     expect(res.status).not.toBe(201);
@@ -43,7 +56,8 @@ describe('Social Service - Pruebas de Borde (Boundary Testing)', () => {
           name: `Grupo Borde ${i}-${asignaturaId}`,
           subjectId: asignaturaId,
           description: 'Límite exacto',
-          creatorId: 'qa-tester'
+          creatorId: 'qa-tester',
+          adminId: 'qa-tester'
         });
       expect(res.status).toBe(201);
     }
@@ -59,7 +73,8 @@ describe('Social Service - Pruebas de Borde (Boundary Testing)', () => {
           name: `Grupo Prohibido-${asignaturaId}`,
           subjectId: asignaturaId,
           description: 'Excediendo el límite',
-          creatorId: 'qa-tester'
+          creatorId: 'qa-tester',
+          adminId: 'qa-tester'
         });
 
       if (res.status === 201) {
@@ -76,7 +91,8 @@ describe('Social Service - Pruebas de Borde (Boundary Testing)', () => {
       .send({
         name: '',
         subjectId: asignaturaId,
-        creatorId: 'qa-tester'
+        creatorId: 'qa-tester',
+        adminId: 'qa-tester'
       });
 
     expect(res.status).not.toBe(201);

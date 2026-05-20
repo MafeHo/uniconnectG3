@@ -18,7 +18,7 @@ module.exports = async () => {
   process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8085';
 
   console.log('════════════════════════════════════════════════════════');
-  console.log('AMBIENTE DE TESTING CONFIGURADO');
+  console.log('AMBIENTE DE TESTING CONFIGURADO (SOCIAL-SERVICE WORKER)');
   console.log('════════════════════════════════════════════════════════');
   console.log('NODE_ENV:', process.env.NODE_ENV);
   console.log('Emulador:', process.env.FIRESTORE_EMULATOR_HOST);
