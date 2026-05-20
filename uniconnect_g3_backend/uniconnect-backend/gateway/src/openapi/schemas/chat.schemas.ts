@@ -7,7 +7,10 @@ import {
   CreateChatResponseSchema,
   AddReactionRequestSchema,
   ChatSchema,
-  SuccessResponseSchema
+  SuccessResponseSchema,
+  CreatePollRequestSchema,
+  VotePollRequestSchema,
+  PollResultsResponseSchema
 } from '@uniconnect/api-types/dist/schemas/chat.schema';
 
 // Register models
@@ -16,8 +19,11 @@ const OpenAPISendMessageRequest = registry.register('SendMessageRequest', SendMe
 const OpenAPICreateChatRequest = registry.register('CreateChatRequest', CreateChatRequestSchema);
 const OpenAPICreateChatResponse = registry.register('CreateChatResponse', CreateChatResponseSchema);
 const OpenAPIAddReactionRequest = registry.register('AddReactionRequest', AddReactionRequestSchema);
-const OpenAPIChat = registry.register('Chat', ChatSchema);
+registry.register('Chat', ChatSchema);
 const OpenAPISuccessResponse = registry.register('ChatSuccessResponse', SuccessResponseSchema);
+const OpenAPICreatePollRequest = registry.register('CreatePollRequest', CreatePollRequestSchema);
+const OpenAPIVotePollRequest = registry.register('VotePollRequest', VotePollRequestSchema);
+const OpenAPIPollResults = registry.register('PollResults', PollResultsResponseSchema);
 
 // === PRIVATE & GENERAL CHATS ===
 
@@ -270,3 +276,94 @@ registry.registerPath({
     },
   },
 });
+
+// === ENCUESTAS EN CHAT GRUPAL (US-V04) ===
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/group-chats/{groupId}/polls',
+  summary: 'Crear una encuesta rápida en un chat grupal',
+  tags: ['Chats de Grupo'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' })
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: OpenAPICreatePollRequest,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Encuesta creada exitosamente',
+      content: {
+        'application/json': {
+          schema: OpenAPIMessage,
+        },
+      },
+    },
+    400: { description: 'Datos de entrada inválidos' },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/group-chats/{groupId}/polls/{messageId}/vote',
+  summary: 'Votar en una encuesta activa',
+  tags: ['Chats de Grupo'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' }),
+      messageId: z.string().openapi({ description: 'ID de la encuesta (mensaje)' })
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: OpenAPIVotePollRequest,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Voto registrado y porcentaje calculado exitosamente',
+      content: {
+        'application/json': {
+          schema: OpenAPIPollResults,
+        },
+      },
+    },
+    400: { description: 'Opción inválida o error de validación' },
+    404: { description: 'Encuesta no encontrada' },
+    409: { description: 'Voto duplicado (el usuario ya votó)' },
+    410: { description: 'La encuesta está cerrada o expirada' },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/group-chats/{groupId}/polls/{messageId}/results',
+  summary: 'Obtener resultados actualizados de una encuesta con porcentajes',
+  tags: ['Chats de Grupo'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' }),
+      messageId: z.string().openapi({ description: 'ID de la encuesta (mensaje)' })
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Resultados recuperados con éxito',
+      content: {
+        'application/json': {
+          schema: OpenAPIPollResults,
+        },
+      },
+    },
+    404: { description: 'Encuesta no encontrada' },
+  },
+});
+

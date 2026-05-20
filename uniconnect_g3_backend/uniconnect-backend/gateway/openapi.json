@@ -723,7 +723,8 @@
               "text",
               "image",
               "file",
-              "system"
+              "system",
+              "poll"
             ]
           },
           "fileURL": {
@@ -786,7 +787,8 @@
               "text",
               "image",
               "file",
-              "system"
+              "system",
+              "poll"
             ],
             "default": "text"
           },
@@ -919,6 +921,118 @@
         },
         "required": [
           "success"
+        ]
+      },
+      "CreatePollRequest": {
+        "type": "object",
+        "properties": {
+          "senderId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "minItems": 2,
+            "maxItems": 10
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "senderId",
+          "question",
+          "options",
+          "duration"
+        ]
+      },
+      "VotePollRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "optionIndex": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "userId",
+          "optionIndex"
+        ]
+      },
+      "PollResults": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "votes": {
+                  "type": "number"
+                },
+                "percentage": {
+                  "type": "number"
+                },
+                "voters": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "text",
+                "votes",
+                "percentage",
+                "voters"
+              ]
+            }
+          },
+          "totalVotes": {
+            "type": "number"
+          },
+          "isClosed": {
+            "type": "boolean"
+          },
+          "closesAt": {
+            "type": "string"
+          },
+          "creatorId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "options",
+          "totalVotes",
+          "isClosed",
+          "closesAt",
+          "creatorId"
         ]
       },
       "Faculty": {
@@ -1826,7 +1940,8 @@
                           "text",
                           "image",
                           "file",
-                          "system"
+                          "system",
+                          "poll"
                         ]
                       },
                       "fileURL": {
@@ -2117,6 +2232,153 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/group-chats/{groupId}/polls": {
+      "post": {
+        "summary": "Crear una encuesta rápida en un chat grupal",
+        "tags": [
+          "Chats de Grupo"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePollRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Encuesta creada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos de entrada inválidos"
+          }
+        }
+      }
+    },
+    "/api/group-chats/{groupId}/polls/{messageId}/vote": {
+      "post": {
+        "summary": "Votar en una encuesta activa",
+        "tags": [
+          "Chats de Grupo"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la encuesta (mensaje)"
+            },
+            "required": true,
+            "name": "messageId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VotePollRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Voto registrado y porcentaje calculado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PollResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Opción inválida o error de validación"
+          },
+          "404": {
+            "description": "Encuesta no encontrada"
+          },
+          "409": {
+            "description": "Voto duplicado (el usuario ya votó)"
+          },
+          "410": {
+            "description": "La encuesta está cerrada o expirada"
+          }
+        }
+      }
+    },
+    "/api/group-chats/{groupId}/polls/{messageId}/results": {
+      "get": {
+        "summary": "Obtener resultados actualizados de una encuesta con porcentajes",
+        "tags": [
+          "Chats de Grupo"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la encuesta (mensaje)"
+            },
+            "required": true,
+            "name": "messageId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultados recuperados con éxito",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PollResults"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Encuesta no encontrada"
           }
         }
       }
