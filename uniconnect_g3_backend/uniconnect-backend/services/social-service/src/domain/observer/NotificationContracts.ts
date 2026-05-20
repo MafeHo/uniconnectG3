@@ -8,6 +8,10 @@ export interface IPushNotificationData {
   userName?: string;
   newState?: string;
   message?: string;
+  sessionId?: string;
+  sessionTitle?: string;
+  sessionDate?: string;
+  sessionTime?: string;
   [key: string]: unknown; // Extensibilidad segura
 }
 

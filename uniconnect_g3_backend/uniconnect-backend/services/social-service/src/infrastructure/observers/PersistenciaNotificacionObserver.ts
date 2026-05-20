@@ -70,6 +70,14 @@ export class PersistenciaNotificacionObserver extends IObserver {
           return `Tu solicitud para unirte al grupo ${data.groupName || 'seleccionado'} ha sido aceptada.`;
         }
         return String(data.message || '') || `Notificación del sistema para el grupo ${String(data.groupName || 'seleccionado')}.`;
+      case 'SESION_CREADA':
+        return `Nueva sesión "${data.sessionTitle || 'sesión'}" programada en ${data.groupName || 'el grupo'}.`;
+      case 'SESION_CANCELADA':
+        return `La sesión "${data.sessionTitle || 'sesión'}" en ${data.groupName || 'el grupo'} fue cancelada.`;
+      case 'DISPONIBILIDAD_ACTUALIZADA':
+        return `${data.userName || 'Un participante'} actualizó su disponibilidad en ${data.groupName || 'el grupo'}.`;
+      case 'RECORDATORIO_SESION':
+        return `Recordatorio: La sesión "${data.sessionTitle || 'sesión'}" comienza pronto.`;
       default:
         return `Nueva notificación en el grupo ${String(data.groupName || 'desconocido')}.`;
     }
@@ -78,6 +86,9 @@ export class PersistenciaNotificacionObserver extends IObserver {
   private _mapEventType(event: string): string {
     if (event === 'SOLICITUD_INGRESO') return 'group_request';
     if (event === 'NOTIFICACION_SISTEMA') return 'notification_system';
+    if (event === 'SESION_CREADA' || event === 'SESION_CANCELADA') return 'session_update';
+    if (event === 'DISPONIBILIDAD_ACTUALIZADA') return 'availability_update';
+    if (event === 'RECORDATORIO_SESION') return 'session_reminder';
     return 'group_update';
   }
 }
