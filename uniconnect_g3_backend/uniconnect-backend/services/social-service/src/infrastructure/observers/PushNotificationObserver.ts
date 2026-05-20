@@ -31,6 +31,14 @@ export class PushNotificationObserver extends IObserver {
         await this._sendToNotificationService('TRANSFER_ADMIN_ACEPTADA', data);
       } else if (event === GroupEvents.TRANSFERENCIA_ADMIN_RECHAZADA || event === 'ADMIN_TRANSFER_REJECTED') {
         await this._sendToNotificationService('TRANSFER_ADMIN_RECHAZADA', data);
+      } else if (event === GroupEvents.SESION_CREADA) {
+        await this._sendToNotificationService('SESION_CREADA', data);
+      } else if (event === GroupEvents.SESION_CANCELADA) {
+        await this._sendToNotificationService('SESION_CANCELADA', data);
+      } else if (event === GroupEvents.DISPONIBILIDAD_ACTUALIZADA) {
+        await this._sendToNotificationService('DISPONIBILIDAD_ACTUALIZADA', data);
+      } else if (event === GroupEvents.RECORDATORIO_SESION) {
+        await this._sendToNotificationService('RECORDATORIO_SESION', data);
       }
     } catch (error: unknown) {
       if (error instanceof Error) {

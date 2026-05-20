@@ -26,7 +26,7 @@ export class WebSocketNotificationObserver extends IObserver {
         return;
       }
 
-      const groupEvents = ['ADMIN_TRANSFER_REQUESTED', 'ADMIN_TRANSFER_COMPLETED', 'ADMIN_TRANSFER_REJECTED', 'GROUP_LOCKED', 'GROUP_DISSOLVED'];
+      const groupEvents = ['ADMIN_TRANSFER_REQUESTED', 'ADMIN_TRANSFER_COMPLETED', 'ADMIN_TRANSFER_REJECTED', 'GROUP_LOCKED', 'GROUP_DISSOLVED', 'SESION_CREADA', 'SESION_CANCELADA', 'RECORDATORIO_SESION'];
 
       if (groupEvents.includes(event)) {
         console.log(`[Observer WebSocket] Emitiendo tiempo real: ${event} a la sala del grupo: ${data.groupId}`);
@@ -91,6 +91,14 @@ export class WebSocketNotificationObserver extends IObserver {
         return `El grupo ${data.groupName || 'actual'} ha sido bloqueado por razones administrativas.`;
       case 'GROUP_DISSOLVED':
         return `El grupo ${data.groupName || 'actual'} ha sido disuelto.`;
+      case 'SESION_CREADA':
+        return `Nueva sesión de estudio programada en ${data.groupName || 'el grupo'}: ${data.sessionTitle || 'sesión'}.`;
+      case 'SESION_CANCELADA':
+        return `La sesión "${data.sessionTitle || 'sesión'}" en ${data.groupName || 'el grupo'} ha sido cancelada.`;
+      case 'DISPONIBILIDAD_ACTUALIZADA':
+        return `${data.userName || 'Un participante'} actualizó su disponibilidad en ${data.groupName || 'el grupo'}.`;
+      case 'RECORDATORIO_SESION':
+        return `Recordatorio: La sesión "${data.sessionTitle || 'sesión'}" comienza pronto.`;
       default:
         return 'Tienes una nueva notificación.';
     }

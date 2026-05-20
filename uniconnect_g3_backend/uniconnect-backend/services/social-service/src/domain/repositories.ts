@@ -1,6 +1,7 @@
 import { Group } from './Group';
 import { GroupMember } from './GroupMember';
 import { Event } from './Event';
+import { StudySession } from './StudySession';
 import * as admin from 'firebase-admin';
 
 export interface User {
@@ -95,5 +96,16 @@ export interface IAcademicCatalogRepository {
   findSubjectsByIds(subjectIds: string[]): Promise<Subject[]>;
   getSubjectById(subjectId: string): Promise<Subject | null>;
   getAllSubjects(): Promise<Subject[]>;
+}
+
+export interface IStudySessionRepository {
+  create(session: StudySession): Promise<string>;
+  createBatch(sessions: StudySession[]): Promise<string[]>;
+  findByGroupId(groupId: string): Promise<StudySession[]>;
+  findById(groupId: string, sessionId: string): Promise<StudySession | null>;
+  update(groupId: string, sessionId: string, data: Partial<StudySession>): Promise<void>;
+  cancelById(groupId: string, sessionId: string): Promise<void>;
+  findUpcoming(minutesBefore: number): Promise<StudySession[]>;
+  findBySeriesId(groupId: string, seriesId: string): Promise<StudySession[]>;
 }
 
