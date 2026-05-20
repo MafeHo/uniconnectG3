@@ -156,16 +156,25 @@ export class FirestoreStudySessionRepository implements IStudySessionRepository 
   }
 
   async findUpcoming(minutesBefore: number): Promise<StudySession[]> {
-    const snapshot = await this.db
-      .collectionGroup('study_sessions')
-      .where('status', '==', 'scheduled')
-      .get();
+    // Para evitar errores de precondición (FAILED_PRECONDITION) por falta de índices compuestos o exemptions en colección de grupo local o real,
+    // primero recuperamos todos los grupos y luego consultamos las subcolecciones de cada uno de manera paralela y segura.
+    const groupsSnap = await this.db.collection('groups').get();
+    const promises = groupsSnap.docs.map(groupDoc => 
+      this.db
+        .collection('groups')
+        .doc(groupDoc.id)
+        .collection('study_sessions')
+        .where('status', '==', 'scheduled')
+        .get()
+    );
+    const snapshots = await Promise.all(promises);
+    const docs = snapshots.flatMap(snap => snap.docs);
 
     const now = Date.now();
     const limit = now + minutesBefore * 60 * 1000;
 
     const upcoming: StudySession[] = [];
-    for (const doc of snapshot.docs) {
+    for (const doc of docs) {
       const session = this._mapDocument(doc);
       try {
         const parts = session.date.split('-');

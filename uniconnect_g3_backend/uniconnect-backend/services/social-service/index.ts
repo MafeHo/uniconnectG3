@@ -18,6 +18,7 @@ import { FirestoreCategoryRepository } from './src/infrastructure/database/Fires
 import { FirestoreEventSubscriptionRepository } from './src/infrastructure/database/FirestoreEventSubscriptionRepository';
 import { FirestoreUserRepository } from './src/infrastructure/database/FirestoreUserRepository';
 import { FirestoreAcademicCatalogRepository } from './src/infrastructure/database/FirestoreAcademicCatalogRepository';
+import { FirestoreStudySessionRepository } from './src/infrastructure/database/FirestoreStudySessionRepository';
 
 const groupRepo = new FirestoreGroupRepository(db);
 const groupMemberRepo = new FirestoreGroupMemberRepository(db);
@@ -27,6 +28,7 @@ const categoryRepo = new FirestoreCategoryRepository(db);
 const subscriptionRepo = new FirestoreEventSubscriptionRepository(db);
 const userRepo = new FirestoreUserRepository(db);
 const catalogRepo = new FirestoreAcademicCatalogRepository(db);
+const sessionRepo = new FirestoreStudySessionRepository(db);
 
 // --- INFRAESTRUCTURA OBSERVER ---
 import studyGroupSubject from './src/application/observer/GrupoEstudioSubject';
@@ -35,6 +37,15 @@ import PersistenciaNotificacionObserver from './src/infrastructure/observers/Per
 import WebSocketNotificationObserver from './src/infrastructure/observers/WebSocketNotificationObserver';
 import PushNotificationObserver from './src/infrastructure/observers/PushNotificationObserver';
 import EventoUniversidadObserver from './src/infrastructure/observers/EventoUniversidadObserver';
+import { StudySessionScheduler } from './src/application/scheduler/StudySessionScheduler';
+
+const sessionScheduler = StudySessionScheduler.getInstance();
+sessionScheduler.init(
+  sessionRepo,
+  groupMemberRepo,
+  groupRepo,
+  process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3006'
+);
 
 // Setup Express y HTTP Server para Sockets
 const app: express.Application = express();
@@ -97,6 +108,13 @@ import { SubscribeToCategory } from './src/application/use-cases/event/Subscribe
 import { UnsubscribeFromCategory } from './src/application/use-cases/event/UnsubscribeFromCategory';
 import { GetSubscribedCategories } from './src/application/use-cases/event/GetSubscribedCategories';
 
+// Study Session Use Cases (US-V02)
+import { CreateStudySession } from './src/application/use-cases/session/CreateStudySession';
+import { CancelStudySession } from './src/application/use-cases/session/CancelStudySession';
+import { GetGroupSessions } from './src/application/use-cases/session/GetGroupSessions';
+import { UpdateAttendance } from './src/application/use-cases/session/UpdateAttendance';
+import { UpdateAvailability } from './src/application/use-cases/session/UpdateAvailability';
+
 const createGroupUC = new CreateGroup(groupRepo, groupMemberRepo);
 const getUserGroupsUC = new GetUserGroups(groupMemberRepo, groupRepo, catalogRepo, userRepo);
 const getGroupByIdUC = new GetGroupById(groupRepo, groupMemberRepo, groupRequestRepo, catalogRepo, userRepo);
@@ -119,6 +137,12 @@ const getCategoriesUC = new GetCategories(categoryRepo);
 const subscribeToCategoryUC = new SubscribeToCategory(subscriptionRepo);
 const unsubscribeFromCategoryUC = new UnsubscribeFromCategory(subscriptionRepo);
 const getSubscribedCategoriesUC = new GetSubscribedCategories(subscriptionRepo);
+
+const createSessionUC = new CreateStudySession(sessionRepo, groupMemberRepo, studyGroupSubject, sessionScheduler, groupRepo);
+const cancelSessionUC = new CancelStudySession(sessionRepo, groupMemberRepo, studyGroupSubject, sessionScheduler, groupRepo);
+const getGroupSessionsUC = new GetGroupSessions(sessionRepo, groupMemberRepo);
+const updateAttendanceUC = new UpdateAttendance(sessionRepo, groupMemberRepo);
+const updateAvailabilityUC = new UpdateAvailability(groupMemberRepo, groupRepo, studyGroupSubject);
 
 // Controladores
 import { GroupController } from './src/infrastructure/http/controllers/groupController';
@@ -154,6 +178,16 @@ const eventCtrl = new EventController({
 
 import { createGroupRoutes } from './src/infrastructure/http/routes/groupRoutes';
 import { createEventRoutes } from './src/infrastructure/http/routes/eventRoutes';
+import { StudySessionController } from './src/infrastructure/http/controllers/studySessionController';
+import { createStudySessionRoutes } from './src/infrastructure/http/routes/studySessionRoutes';
+
+const sessionCtrl = new StudySessionController({
+  createSession: createSessionUC,
+  cancelSession: cancelSessionUC,
+  getGroupSessions: getGroupSessionsUC,
+  updateAttendance: updateAttendanceUC,
+  updateAvailability: updateAvailabilityUC
+});
 
 app.use(cors());
 app.use(express.json());
@@ -166,6 +200,7 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+app.use('/groups', createStudySessionRoutes(sessionCtrl));
 app.use('/groups', createGroupRoutes(groupCtrl));
 app.use('/events', createEventRoutes(eventCtrl));
 
@@ -176,6 +211,10 @@ if (process.env.NODE_ENV !== 'test') {
   const PORT = process.env.PORT || 3003;
   server.listen(PORT, () => {
     console.log(`👥 Social Service (Grupos y Eventos) listo en puerto ${PORT}`);
+    // Restaurar recordatorios programados activos
+    sessionScheduler.restoreActiveTimers().catch(err => {
+      console.error('[StudySessionScheduler] Error al restaurar recordatorios activos:', err);
+    });
   });
 }
 

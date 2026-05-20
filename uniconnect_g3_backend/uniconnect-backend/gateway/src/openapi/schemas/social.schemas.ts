@@ -14,7 +14,11 @@ import {
   RequestAdminTransferSchema,
   AddMemberRequestSchema,
   SearchGroupsQuerySchema,
-  UnsubscribeCategoryQuerySchema
+  UnsubscribeCategoryQuerySchema,
+  CreateStudySessionRequestSchema,
+  StudySessionSchema,
+  UpdateAttendanceRequestSchema,
+  UpdateAvailabilityRequestSchema
 } from '@uniconnect/api-types/dist/schemas/social.schema';
 
 // Register models
@@ -31,6 +35,11 @@ const OpenAPICreateEventRequest = registry.register('CreateEventRequest', Create
 const OpenAPISubscribeCategoryRequest = registry.register('SubscribeCategoryRequest', SubscribeCategoryRequestSchema);
 const OpenAPIRequestAdminTransfer = registry.register('RequestAdminTransfer', RequestAdminTransferSchema);
 const OpenAPIAddMemberRequest = registry.register('AddMemberRequest', AddMemberRequestSchema);
+
+const OpenAPICreateSessionRequest = registry.register('CreateStudySessionRequest', CreateStudySessionRequestSchema);
+const OpenAPIStudySession = registry.register('StudySession', StudySessionSchema);
+const OpenAPIUpdateAttendance = registry.register('UpdateAttendanceRequest', UpdateAttendanceRequestSchema);
+const OpenAPIUpdateAvailability = registry.register('UpdateAvailabilityRequest', UpdateAvailabilityRequestSchema);
 
 // === GROUPS PATHS ===
 
@@ -456,6 +465,155 @@ registry.registerPath({
       content: {
         'application/json': {
           schema: z.array(z.any())
+        }
+      }
+    }
+  }
+});
+
+// === STUDY SESSIONS (US-V02) ===
+
+// Create a study session
+registry.registerPath({
+  method: 'post',
+  path: '/api/groups/{groupId}/sessions',
+  summary: 'Programar una sesión de estudio (soporta recurrencia semanal)',
+  tags: ['Social - Sesiones de Estudio'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' })
+    }),
+    body: {
+      content: {
+        'application/json': { schema: OpenAPICreateSessionRequest }
+      }
+    }
+  },
+  responses: {
+    201: {
+      description: 'Sesiones de estudio programadas exitosamente',
+      content: {
+        'application/json': {
+          schema: z.union([OpenAPIStudySession, z.array(OpenAPIStudySession)])
+        }
+      }
+    }
+  }
+});
+
+// Get study sessions of a group
+registry.registerPath({
+  method: 'get',
+  path: '/api/groups/{groupId}/sessions',
+  summary: 'Obtener todas las sesiones de estudio del grupo con asistencia del usuario',
+  tags: ['Social - Sesiones de Estudio'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' })
+    }),
+    query: z.object({
+      userId: z.string().openapi({ description: 'ID del usuario solicitante para mapear su voto individual' })
+    })
+  },
+  responses: {
+    200: {
+      description: 'Lista de sesiones de estudio del grupo',
+      content: {
+        'application/json': {
+          schema: z.array(OpenAPIStudySession)
+        }
+      }
+    }
+  }
+});
+
+// Cancel a study session
+registry.registerPath({
+  method: 'patch',
+  path: '/api/groups/{groupId}/sessions/{sessionId}',
+  summary: 'Cancelar una sesión de estudio específica de una serie',
+  tags: ['Social - Sesiones de Estudio'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' }),
+      sessionId: z.string().openapi({ description: 'ID de la sesión de estudio a cancelar' })
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            userId: z.string().openapi({ description: 'ID del usuario organizador que cancela la sesión' })
+          })
+        }
+      }
+    }
+  },
+  responses: {
+    200: {
+      description: 'Sesión de estudio cancelada exitosamente',
+      content: {
+        'application/json': {
+          schema: OpenAPIStudySession
+        }
+      }
+    }
+  }
+});
+
+// Update attendance to a study session
+registry.registerPath({
+  method: 'post',
+  path: '/api/groups/{groupId}/sessions/{sessionId}/attendance',
+  summary: 'Confirmar o declinar asistencia a una sesión de estudio',
+  tags: ['Social - Sesiones de Estudio'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' }),
+      sessionId: z.string().openapi({ description: 'ID de la sesión de estudio' })
+    }),
+    body: {
+      content: {
+        'application/json': { schema: OpenAPIUpdateAttendance }
+      }
+    }
+  },
+  responses: {
+    200: {
+      description: 'Asistencia actualizada exitosamente',
+      content: {
+        'application/json': {
+          schema: OpenAPIStudySession
+        }
+      }
+    }
+  }
+});
+
+// Update member availability
+registry.registerPath({
+  method: 'put',
+  path: '/api/groups/{groupId}/availability',
+  summary: 'Actualizar franjas de disponibilidad de un estudiante',
+  tags: ['Social - Sesiones de Estudio'],
+  request: {
+    params: z.object({
+      groupId: z.string().openapi({ description: 'ID del grupo de estudio' })
+    }),
+    body: {
+      content: {
+        'application/json': { schema: OpenAPIUpdateAvailability }
+      }
+    }
+  },
+  responses: {
+    200: {
+      description: 'Disponibilidad actualizada exitosamente',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string()
+          })
         }
       }
     }

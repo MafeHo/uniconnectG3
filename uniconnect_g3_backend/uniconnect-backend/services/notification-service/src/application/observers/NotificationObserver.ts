@@ -106,4 +106,52 @@ export class NotificationObserver {
       type: 'event'
     });
   }
+
+  async onStudySessionReminder(
+    userId: string,
+    sessionTitle: string,
+    sessionDate: string,
+    sessionTime: string,
+    groupName: string,
+    groupId: string
+  ): Promise<NotificationResult> {
+    return this.sendNotificationUseCase.execute({
+      userId,
+      title: `📚 Recordatorio: ${sessionTitle}`,
+      body: `Tu sesión de estudio en "${groupName}" comienza a las ${sessionTime}.`,
+      metadata: { groupId, sessionDate, type: 'session_reminder' },
+      type: 'session_reminder'
+    });
+  }
+
+  async onStudySessionCreated(
+    userId: string,
+    sessionTitle: string,
+    groupName: string,
+    groupId: string
+  ): Promise<NotificationResult> {
+    return this.sendNotificationUseCase.execute({
+      userId,
+      title: `📅 Nueva sesión: ${sessionTitle}`,
+      body: `Se ha programado una sesión de estudio en "${groupName}".`,
+      metadata: { groupId, type: 'session_created' },
+      type: 'session_update'
+    });
+  }
+
+  async onAvailabilityUpdated(
+    organizerId: string,
+    userName: string,
+    groupName: string,
+    groupId: string
+  ): Promise<NotificationResult> {
+    return this.sendNotificationUseCase.execute({
+      userId: organizerId,
+      title: `Disponibilidad actualizada`,
+      body: `${userName} actualizó su disponibilidad en "${groupName}".`,
+      metadata: { groupId, type: 'availability_updated' },
+      type: 'group_update'
+    });
+  }
 }
+

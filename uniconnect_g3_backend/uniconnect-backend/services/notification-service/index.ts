@@ -132,6 +132,32 @@ app.post('/notify', async (req: Request, res: Response) => {
           payload.userId as string, payload.categoryName as string, payload.eventTitle as string, payload.eventId as string
         );
         break;
+      case 'RECORDATORIO_SESION':
+        result = await notificationObserver.onStudySessionReminder(
+          payload.userId as string,
+          payload.sessionTitle as string,
+          payload.sessionDate as string,
+          payload.sessionTime as string,
+          payload.groupName as string,
+          payload.groupId as string
+        );
+        break;
+      case 'SESION_CREADA':
+        result = await notificationObserver.onStudySessionCreated(
+          payload.userId as string,
+          payload.sessionTitle as string,
+          payload.groupName as string,
+          payload.groupId as string
+        );
+        break;
+      case 'DISPONIBILIDAD_ACTUALIZADA':
+        result = await notificationObserver.onAvailabilityUpdated(
+          payload.targetUserId as string,
+          payload.userName as string,
+          payload.groupName as string,
+          payload.groupId as string
+        );
+        break;
       default:
         res.status(400).json({ error: `Unknown event type: ${event}` });
         return;

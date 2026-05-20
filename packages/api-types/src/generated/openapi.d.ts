@@ -2153,6 +2153,206 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/groups/{groupId}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obtener todas las sesiones de estudio del grupo con asistencia del usuario */
+        get: {
+            parameters: {
+                query: {
+                    userId: string;
+                };
+                header?: never;
+                path: {
+                    groupId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Lista de sesiones de estudio del grupo */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StudySession"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Programar una sesión de estudio (soporta recurrencia semanal) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    groupId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateStudySessionRequest"];
+                };
+            };
+            responses: {
+                /** @description Sesiones de estudio programadas exitosamente */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StudySession"] | components["schemas"]["StudySession"][];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/groups/{groupId}/sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cancelar una sesión de estudio específica de una serie */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    groupId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @description ID del usuario organizador que cancela la sesión */
+                        userId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Sesión de estudio cancelada exitosamente */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StudySession"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/groups/{groupId}/sessions/{sessionId}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirmar o declinar asistencia a una sesión de estudio */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    groupId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAttendanceRequest"];
+                };
+            };
+            responses: {
+                /** @description Asistencia actualizada exitosamente */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StudySession"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/groups/{groupId}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Actualizar franjas de disponibilidad de un estudiante */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    groupId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAvailabilityRequest"];
+                };
+            };
+            responses: {
+                /** @description Disponibilidad actualizada exitosamente */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2551,6 +2751,59 @@ export interface components {
         AddMemberRequest: {
             userId: string;
             userName: string;
+        };
+        CreateStudySessionRequest: {
+            title: string;
+            /** @default  */
+            description: string;
+            date: string;
+            time: string;
+            duration: number;
+            location: string;
+            creatorId: string;
+            recurrenceRule?: {
+                /** @enum {string} */
+                frequency: "weekly";
+                endDate: string;
+            };
+            /** @default 30 */
+            reminderMinutesBefore: number;
+        };
+        StudySession: {
+            id: string;
+            groupId: string;
+            title: string;
+            description: string;
+            date: string;
+            time: string;
+            duration: number;
+            location: string;
+            creatorId: string;
+            seriesId: string | null;
+            recurrenceRule: {
+                /** @enum {string} */
+                frequency: "weekly";
+                endDate: string;
+            } | null;
+            /** @enum {string} */
+            status: "scheduled" | "cancelled";
+            reminderMinutesBefore: number;
+            attendees: {
+                [key: string]: "confirmed" | "declined" | "pending";
+            };
+            isRecurring?: boolean;
+            userAttendance?: string;
+            createdAt?: string;
+            updatedAt?: string;
+        };
+        UpdateAttendanceRequest: {
+            userId: string;
+            /** @enum {string} */
+            status: "confirmed" | "declined";
+        };
+        UpdateAvailabilityRequest: {
+            userId: string;
+            availability: string[];
         };
     };
     responses: never;

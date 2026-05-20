@@ -94,15 +94,30 @@ export class FirestoreGroupMessageRepository implements IGroupMessageRepository 
   }
 
   async findActivePolls(): Promise<Array<Record<string, unknown> & { groupId: string }>> {
-    const snapshot = await this.db
-      .collectionGroup('messages')
-      .where('type', '==', 'poll')
-      .where('metadata.encuesta.isClosed', '==', false)
-      .get();
+    // Para evitar errores de precondición (FAILED_PRECONDITION) por falta de índices compuestos en colección de grupo local o real,
+    // primero recuperamos todos los grupos y luego consultamos los mensajes de tipo poll de cada uno en paralelo, filtrando en memoria.
+    const groupsSnap = await this.db.collection('groups').get();
+    const promises = groupsSnap.docs.map(groupDoc => 
+      this.db
+        .collection('groups')
+        .doc(groupDoc.id)
+        .collection('messages')
+        .where('type', '==', 'poll')
+        .get()
+    );
+    const snapshots = await Promise.all(promises);
+    const docs = snapshots.flatMap(snap => snap.docs);
 
-    return snapshot.docs.map(doc => {
-      const groupId = doc.ref.parent.parent?.id || '';
-      return { id: doc.id, groupId, ...doc.data() } as Record<string, unknown> & { groupId: string };
-    });
+    return docs
+      .filter(doc => {
+        const data = doc.data();
+        const metadata = data.metadata || {};
+        const encuesta = metadata.encuesta || data.encuesta || {};
+        return encuesta.isClosed === false;
+      })
+      .map(doc => {
+        const groupId = doc.ref.parent.parent?.id || '';
+        return { id: doc.id, groupId, ...doc.data() } as Record<string, unknown> & { groupId: string };
+      });
   }
 }

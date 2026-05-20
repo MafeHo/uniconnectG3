@@ -95,3 +95,59 @@ export const UnsubscribeCategoryQuerySchema = z.object({
   categoryId: z.string().min(1, 'El categoryId es requerido'),
 });
 
+// === STUDY SESSIONS (US-V02) ===
+
+export const RecurrenceRuleSchema = z.object({
+  frequency: z.enum(['weekly']),
+  endDate: z.string().min(1, 'La fecha de fin es requerida')  // ISO date
+});
+
+export const CreateStudySessionRequestSchema = z.object({
+  title: z.string().min(3).max(100),
+  description: z.string().max(500).optional().default(''),
+  date: z.string().min(1, 'La fecha es requerida'),          // "2026-06-01"
+  time: z.string().min(1, 'La hora es requerida'),            // "14:00"
+  duration: z.number().int().min(15).max(480),                 // minutos
+  location: z.string().min(1).max(200),
+  creatorId: z.string().min(1, 'El creatorId es requerido'),
+  recurrenceRule: RecurrenceRuleSchema.optional(),
+  reminderMinutesBefore: z.number().int().min(5).max(1440).default(30)
+});
+
+export const StudySessionSchema = z.object({
+  id: z.string(),
+  groupId: z.string(),
+  title: z.string(),
+  description: z.string(),
+  date: z.string(),
+  time: z.string(),
+  duration: z.number(),
+  location: z.string(),
+  creatorId: z.string(),
+  seriesId: z.string().nullable(),
+  recurrenceRule: RecurrenceRuleSchema.nullable(),
+  status: z.enum(['scheduled', 'cancelled']),
+  reminderMinutesBefore: z.number(),
+  attendees: z.record(z.string(), z.enum(['confirmed', 'declined', 'pending'])),
+  isRecurring: z.boolean().optional(),
+  userAttendance: z.string().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional()
+});
+
+export const UpdateAttendanceRequestSchema = z.object({
+  userId: z.string().min(1),
+  status: z.enum(['confirmed', 'declined'])
+});
+
+export const UpdateAvailabilityRequestSchema = z.object({
+  userId: z.string().min(1),
+  availability: z.array(z.string().min(1))   // ["lunes 14:00-16:00", ...]
+});
+
+export const SessionParamsSchema = z.object({
+  groupId: z.string().min(1),
+  sessionId: z.string().min(1)
+});
+
+

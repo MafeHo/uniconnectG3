@@ -1511,6 +1511,221 @@
           "userId",
           "userName"
         ]
+      },
+      "CreateStudySessionRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "default": ""
+          },
+          "date": {
+            "type": "string",
+            "minLength": 1
+          },
+          "time": {
+            "type": "string",
+            "minLength": 1
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 15,
+            "maximum": 480
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "creatorId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recurrenceRule": {
+            "type": "object",
+            "properties": {
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "weekly"
+                ]
+              },
+              "endDate": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "frequency",
+              "endDate"
+            ]
+          },
+          "reminderMinutesBefore": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 1440,
+            "default": 30
+          }
+        },
+        "required": [
+          "title",
+          "date",
+          "time",
+          "duration",
+          "location",
+          "creatorId"
+        ]
+      },
+      "StudySession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "location": {
+            "type": "string"
+          },
+          "creatorId": {
+            "type": "string"
+          },
+          "seriesId": {
+            "type": "string",
+            "nullable": true
+          },
+          "recurrenceRule": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "weekly"
+                ]
+              },
+              "endDate": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "frequency",
+              "endDate"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "cancelled"
+            ]
+          },
+          "reminderMinutesBefore": {
+            "type": "number"
+          },
+          "attendees": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "confirmed",
+                "declined",
+                "pending"
+              ]
+            }
+          },
+          "isRecurring": {
+            "type": "boolean"
+          },
+          "userAttendance": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "groupId",
+          "title",
+          "description",
+          "date",
+          "time",
+          "duration",
+          "location",
+          "creatorId",
+          "seriesId",
+          "recurrenceRule",
+          "status",
+          "reminderMinutesBefore",
+          "attendees"
+        ]
+      },
+      "UpdateAttendanceRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "declined"
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "status"
+        ]
+      },
+      "UpdateAvailabilityRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "availability": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "userId",
+          "availability"
+        ]
       }
     },
     "parameters": {}
@@ -3567,6 +3782,256 @@
                   "items": {
                     "nullable": true
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/{groupId}/sessions": {
+      "post": {
+        "summary": "Programar una sesión de estudio (soporta recurrencia semanal)",
+        "tags": [
+          "Social - Sesiones de Estudio"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudySessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sesiones de estudio programadas exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/StudySession"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StudySession"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Obtener todas las sesiones de estudio del grupo con asistencia del usuario",
+        "tags": [
+          "Social - Sesiones de Estudio"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del usuario solicitante para mapear su voto individual"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de sesiones de estudio del grupo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StudySession"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/{groupId}/sessions/{sessionId}": {
+      "patch": {
+        "summary": "Cancelar una sesión de estudio específica de una serie",
+        "tags": [
+          "Social - Sesiones de Estudio"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la sesión de estudio a cancelar"
+            },
+            "required": true,
+            "name": "sessionId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "description": "ID del usuario organizador que cancela la sesión"
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sesión de estudio cancelada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudySession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/{groupId}/sessions/{sessionId}/attendance": {
+      "post": {
+        "summary": "Confirmar o declinar asistencia a una sesión de estudio",
+        "tags": [
+          "Social - Sesiones de Estudio"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID de la sesión de estudio"
+            },
+            "required": true,
+            "name": "sessionId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAttendanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Asistencia actualizada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudySession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/groups/{groupId}/availability": {
+      "put": {
+        "summary": "Actualizar franjas de disponibilidad de un estudiante",
+        "tags": [
+          "Social - Sesiones de Estudio"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID del grupo de estudio"
+            },
+            "required": true,
+            "name": "groupId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAvailabilityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Disponibilidad actualizada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
                 }
               }
             }
