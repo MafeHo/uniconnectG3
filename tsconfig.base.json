@@ -20,6 +20,13 @@
     "declarationMap": true,
     "sourceMap": true,
     "composite": true,
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@uniconnect/api-types/dist/*": ["packages/api-types/src/*"],
+      "@uniconnect/api-types": ["packages/api-types/src/index.ts"],
+      "@uniconnect/shared/dist/*": ["packages/shared/src/*"],
+      "@uniconnect/shared": ["packages/shared/src/index.ts"]
+    }
   }
 }

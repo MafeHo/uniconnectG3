@@ -1,4 +1,4 @@
-const AuthController = require('../../src/infrastructure/http/controllers/authController');
+const { AuthController } = require('../../src/infrastructure/http/controllers/authController');
 
 describe('AuthController - Unidad', () => {
   let authController;

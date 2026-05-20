@@ -1,14 +1,14 @@
 const { authMiddleware } = require('../../src/infrastructure/http/middlewares/authMiddleware');
 const jwt = require('jsonwebtoken');
 
-jest.mock('jsonwebtoken');
-
 describe('Auth Middleware - Unidad', () => {
   let mockReq;
   let mockRes;
   let mockNext;
+  let verifySpy;
 
   beforeEach(() => {
+    verifySpy = jest.spyOn(jwt, 'verify');
     jest.clearAllMocks();
 
     mockReq = {
@@ -25,6 +25,10 @@ describe('Auth Middleware - Unidad', () => {
 
     mockNext = jest.fn();
     process.env.JWT_SECRET = 'test-secret-key';
+  });
+
+  afterEach(() => {
+    verifySpy.mockRestore();
   });
 
   it('debería retornar 401 si no hay token en cookies ni en el header', () => {
@@ -59,7 +63,7 @@ describe('Auth Middleware - Unidad', () => {
   it('debería llamar a next() si el token es válido usando JWT', () => {
     const mockDecodedToken = { uid: 'user_123', email: 'test@ucaldas.edu.co' };
     
-    jwt.verify.mockReturnValue(mockDecodedToken);
+    verifySpy.mockReturnValue(mockDecodedToken);
 
     authMiddleware(mockReq, mockRes, mockNext);
 
@@ -68,7 +72,7 @@ describe('Auth Middleware - Unidad', () => {
   });
 
   it('debería retornar 401 si la verificación del JWT falla o expira', () => {
-    jwt.verify.mockImplementation(() => {
+    verifySpy.mockImplementation(() => {
       throw new Error('JsonWebTokenError: invalid signature');
     });
 

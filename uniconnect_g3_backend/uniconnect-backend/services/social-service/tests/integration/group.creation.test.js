@@ -34,7 +34,8 @@ describe('Social Service - Suite de Pruebas: Creación de Grupos', () => {
       name: nombreUnico,
       subjectId: 'MAT-1',
       description: 'Test duplicado',
-      creatorId: 'user-qa-123'
+      creatorId: 'user-qa-123',
+      adminId: 'user-qa-123'
     };
 
     await request(app).post('/groups').send(payload);

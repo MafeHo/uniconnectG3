@@ -1,7 +1,7 @@
-const MensajeBase = require('../../src/domain/MensajeBase');
-const MensajeConArchivo = require('../../src/domain/decorators/MensajeConArchivo');
-const MensajeConMencion = require('../../src/domain/decorators/MensajeConMencion');
-const MensajeConReaccion = require('../../src/domain/decorators/MensajeConReaccion');
+const { MensajeBase } = require('../../src/domain/MensajeBase');
+const { MensajeConArchivo } = require('../../src/domain/decorators/MensajeConArchivo');
+const { MensajeConMencion } = require('../../src/domain/decorators/MensajeConMencion');
+const { MensajeConReaccion } = require('../../src/domain/decorators/MensajeConReaccion');
 
 describe('Pruebas Unitarias - Patrón Decorador de Mensajes', () => {
 

@@ -1,26 +1,32 @@
-const GetDecoratedProfile = require('../../src/application/use-cases/getDecoratedProfile');
-
 jest.mock('../../src/domain/decorators/PerfilBase', () => {
-  return jest.fn().mockImplementation((data) => ({
-    getProfileData: jest.fn().mockReturnValue(data)
-  }));
+  return {
+    PerfilBase: jest.fn().mockImplementation((data) => ({
+      getProfileData: jest.fn().mockReturnValue(data)
+    }))
+  };
 });
 jest.mock('../../src/domain/decorators/PerfilConEstadisticas', () => {
-  return jest.fn().mockImplementation((perfil, stats) => ({
-    getProfileData: jest.fn().mockReturnValue({
-      ...perfil.getProfileData(),
-      ...stats
-    })
-  }));
+  return {
+    PerfilConEstadisticas: jest.fn().mockImplementation((perfil, stats) => ({
+      getProfileData: jest.fn().mockReturnValue({
+        ...perfil.getProfileData(),
+        ...stats
+      })
+    }))
+  };
 });
 jest.mock('../../src/domain/decorators/PerfilConInsignias', () => {
-  return jest.fn().mockImplementation((perfil) => ({
-    getProfileData: jest.fn().mockReturnValue({
-      ...perfil.getProfileData(),
-      insignias: ['Insignia de prueba']
-    })
-  }));
+  return {
+    PerfilConInsignias: jest.fn().mockImplementation((perfil) => ({
+      getProfileData: jest.fn().mockReturnValue({
+        ...perfil.getProfileData(),
+        insignias: ['Insignia de prueba']
+      })
+    }))
+  };
 });
+
+const GetDecoratedProfile = require('../../src/application/use-cases/getDecoratedProfile').default;
 
 describe('GetDecoratedProfile - Prueba Unitaria', () => {
   let useCase;

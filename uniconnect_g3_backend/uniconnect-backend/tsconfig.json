@@ -4,7 +4,11 @@
     "rootDir": "./",
     "outDir": "./dist",
     "composite": true,
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@uniconnect/api-types": ["packages/api-types/dist/index.d.ts"],
+      "@uniconnect/shared": ["packages/shared/dist/index.d.ts"]
+    }
   },
   "include": [
     "**/*.ts"

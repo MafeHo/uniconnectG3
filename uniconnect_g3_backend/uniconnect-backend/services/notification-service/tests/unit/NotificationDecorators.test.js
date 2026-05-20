@@ -1,8 +1,8 @@
-const INotificacion = require('../../src/domain/entities/INotificacion');
-const Notification = require('../../src/domain/entities/Notification');
-const NotificacionDecorator = require('../../src/domain/decorators/NotificacionDecorator');
-const PrioridadDecorator = require('../../src/domain/decorators/PrioridadDecorator');
-const AccionDecorator = require('../../src/domain/decorators/AccionDecorator');
+const { INotificacion } = require('../../src/domain/entities/INotificacion');
+const { Notification } = require('../../src/domain/entities/Notification');
+const { NotificacionDecorator } = require('../../src/domain/decorators/NotificacionDecorator');
+const { PrioridadDecorator } = require('../../src/domain/decorators/PrioridadDecorator');
+const { AccionDecorator } = require('../../src/domain/decorators/AccionDecorator');
 
 describe('Notification Decorators - Pruebas Unitarias', () => {
   let baseNotification;

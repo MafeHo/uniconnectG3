@@ -1,11 +1,11 @@
-const BaseHandler = require('../../src/application/validations/BaseHandler');
-const ValidarCamposHandler = require('../../src/application/validations/ValidarCamposHandler');
-const ValidarContenidoHandler = require('../../src/application/validations/ValidarContenidoHandler');
-const ValidarTamanoHandler = require('../../src/application/validations/ValidarTamanoHandler');
-const ValidarPermisosHandler = require('../../src/application/validations/ValidarPermisosHandler');
-const ValidarPermisosPrivadoHandler = require('../../src/application/validations/ValidarPermisosPrivadoHandler');
-const ValidarMencionesHandler = require('../../src/application/validations/ValidarMencionesHandler');
-const ValidarMencionesPrivadoHandler = require('../../src/application/validations/ValidarMencionesPrivadoHandler');
+const { BaseHandler } = require('../../src/application/validations/BaseHandler');
+const { ValidarCamposHandler } = require('../../src/application/validations/ValidarCamposHandler');
+const { ValidarContenidoHandler } = require('../../src/application/validations/ValidarContenidoHandler');
+const { ValidarTamanoHandler } = require('../../src/application/validations/ValidarTamanoHandler');
+const { ValidarPermisosHandler } = require('../../src/application/validations/ValidarPermisosHandler');
+const { ValidarPermisosPrivadoHandler } = require('../../src/application/validations/ValidarPermisosPrivadoHandler');
+const { ValidarMencionesHandler } = require('../../src/application/validations/ValidarMencionesHandler');
+const { ValidarMencionesPrivadoHandler } = require('../../src/application/validations/ValidarMencionesPrivadoHandler');
 
 describe('Chat Validation Handlers (CoR) - Pruebas Unitarias Aisladas', () => {
   let mockNextHandler;
@@ -190,9 +190,9 @@ describe('Chat Validation Handlers (CoR) - Pruebas Unitarias Aisladas', () => {
     });
 
     it('debe validar sobre mensaje decorado reconociendo metadatos de archivo adjunto', async () => {
-      // Si no hay texto, pero mensajeDecorado tiene getMetadata() retornando url
+      // Si no hay texto, pero mensajeDecorado tiene getMetadata() retornando archivo
       const mockDecorated = {
-        getMetadata: () => ({ url: 'http://bucket/file.pdf' })
+        getMetadata: () => ({ archivo: { url: 'http://bucket/file.pdf' } })
       };
       const req = { text: '', mensajeDecorado: mockDecorated };
       const res = await handler.manejar(req);
