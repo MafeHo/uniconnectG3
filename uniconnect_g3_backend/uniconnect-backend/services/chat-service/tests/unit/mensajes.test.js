@@ -1,7 +1,8 @@
-const MensajeBase = require('../../src/domain/MensajeBase');
-const MensajeConArchivo = require('../../src/domain/decorators/MensajeConArchivo');
-const MensajeConMencion = require('../../src/domain/decorators/MensajeConMencion');
-const MensajeConReaccion = require('../../src/domain/decorators/MensajeConReaccion');
+const { MensajeBase } = require('../../src/domain/MensajeBase');
+const { MensajeConArchivo } = require('../../src/domain/decorators/MensajeConArchivo');
+const { MensajeConMencion } = require('../../src/domain/decorators/MensajeConMencion');
+const { MensajeConReaccion } = require('../../src/domain/decorators/MensajeConReaccion');
+const { MensajeDecorator } = require('../../src/domain/decorators/MensajeDecorator');
 
 describe('Pruebas Unitarias - Patrón Decorador de Mensajes', () => {
 
@@ -56,6 +57,36 @@ describe('Pruebas Unitarias - Patrón Decorador de Mensajes', () => {
       expect(rendered).toContain('🖼️'); 
       const metadata = mensajeConArchivo.getMetadata();
       expect(metadata.archivo.detectedType).toBe('imagen');
+    });
+
+    test('Caso 3: Detección de tipo excel, powerpoint, video y comprimido', () => {
+      const mensajeBase = new MensajeBase('Archivos varios');
+      
+      const excel = new MensajeConArchivo(mensajeBase, { url: 'u', mimeType: 'm', tamano: 1, fileName: 'f.xlsx' });
+      expect(excel.render()).toContain('📗');
+      expect(excel.getMetadata().archivo.detectedType).toBe('documento_excel');
+
+      const ppt = new MensajeConArchivo(mensajeBase, { url: 'u', mimeType: 'm', tamano: 1, fileName: 'f.pptx' });
+      expect(ppt.render()).toContain('📙');
+      expect(ppt.getMetadata().archivo.detectedType).toBe('documento_powerpoint');
+
+      const video = new MensajeConArchivo(mensajeBase, { url: 'u', mimeType: 'm', tamano: 1, fileName: 'f.mp4' });
+      expect(video.render()).toContain('🎥');
+      expect(video.getMetadata().archivo.detectedType).toBe('video');
+
+      const compressed = new MensajeConArchivo(mensajeBase, { url: 'u', mimeType: 'm', tamano: 1, fileName: 'f.zip' });
+      expect(compressed.render()).toContain('📦');
+      expect(compressed.getMetadata().archivo.detectedType).toBe('archivo_comprimido');
+    });
+
+    test('Caso 4: Archivo con extensión desconocida o sin nombre', () => {
+      const mensajeBase = new MensajeBase('Archivo misterioso');
+      const desconocido = new MensajeConArchivo(mensajeBase, { url: 'u', mimeType: 'm', tamano: 1, fileName: 'f.xyz' });
+      expect(desconocido.render()).toContain('📄');
+      expect(desconocido.getMetadata().archivo.detectedType).toBe('documento');
+
+      const sinNombre = new MensajeConArchivo(mensajeBase, { url: 'http://example.com/url_sola', mimeType: 'm', tamano: 1 });
+      expect(sinNombre.render()).toContain('(Archivo: http://example.com/url_sola)');
     });
   });
 
@@ -114,6 +145,30 @@ describe('Pruebas Unitarias - Patrón Decorador de Mensajes', () => {
   // ==========================================
   describe('Criterio 5: Cobertura de clases y decoradores', () => {
 
+    describe('MensajeDecorator', () => {
+      test('Debe delegar todos los metodos correctamente al mensaje envuelto y retornar toJSON', () => {
+        const mensajeBase = new MensajeBase('Contenido original');
+        const decorator = new MensajeDecorator(mensajeBase);
+
+        expect(decorator.getContenido()).toBe('Contenido original');
+        expect(decorator.getMetadata()).toEqual({});
+        expect(decorator.render()).toBe('Contenido original');
+        
+        const json = decorator.toJSON();
+        expect(json.content).toBe('Contenido original');
+        expect(json.renderedContent).toBe('Contenido original');
+      });
+    });
+
+    describe('MensajeConMencion', () => {
+      test('Debe manejar una lista de menciones vacia o nula sin fallar', () => {
+        const mensajeBase = new MensajeBase('Mensaje sin menciones');
+        const conMencion = new MensajeConMencion(mensajeBase, null); // Forzar || []
+        expect(conMencion.getMetadata().menciones).toEqual([]);
+        expect(conMencion.render()).toBe('Mensaje sin menciones');
+      });
+    });
+
     describe('MensajeConReaccion', () => {
       test('Caso 1: Añade una reacción exitosamente', () => {
         const mensajeBase = new MensajeBase('Mensaje con reacción');
@@ -138,6 +193,18 @@ describe('Pruebas Unitarias - Patrón Decorador de Mensajes', () => {
 
         expect(metadata.reacciones['👍'].count).toBe(2);
         expect(metadata.reacciones['😂'].count).toBe(1);
+      });
+
+      test('Caso 3: No incrementa el contador ni añade duplicado si un usuario reacciona multiples veces con el mismo emoji', () => {
+        const mensajeBase = new MensajeBase('Mensaje con reaccion duplicada');
+        const mensajeConReaccion = new MensajeConReaccion(mensajeBase);
+
+        mensajeConReaccion.addReaccion('🎉', 'user123');
+        mensajeConReaccion.addReaccion('🎉', 'user123'); // Duplicado
+
+        const metadata = mensajeConReaccion.getMetadata();
+        expect(metadata.reacciones['🎉'].count).toBe(1);
+        expect(metadata.reacciones['🎉'].users).toHaveLength(1);
       });
     });
   });

@@ -1,8 +1,8 @@
-const INotificacion = require('../../src/domain/entities/INotificacion');
-const Notification = require('../../src/domain/entities/Notification');
-const NotificacionDecorator = require('../../src/domain/decorators/NotificacionDecorator');
-const PrioridadDecorator = require('../../src/domain/decorators/PrioridadDecorator');
-const AccionDecorator = require('../../src/domain/decorators/AccionDecorator');
+const { INotificacion } = require('../../src/domain/entities/INotificacion');
+const { Notification } = require('../../src/domain/entities/Notification');
+const { NotificacionDecorator } = require('../../src/domain/decorators/NotificacionDecorator');
+const { PrioridadDecorator } = require('../../src/domain/decorators/PrioridadDecorator');
+const { AccionDecorator } = require('../../src/domain/decorators/AccionDecorator');
 
 describe('Notification Decorators - Pruebas Unitarias', () => {
   let baseNotification;
@@ -61,6 +61,13 @@ describe('Notification Decorators - Pruebas Unitarias', () => {
       const dto = decorator.getDTO();
 
       expect(dto.priority).toBe('normal');
+      expect(dto.priorityWeight).toBe(1);
+    });
+
+    it('debe retornar peso por defecto (1) si la prioridad no existe en weights', () => {
+      const decorator = new PrioridadDecorator(baseNotification, 'normal');
+      decorator.priority = 'desconocido';
+      const dto = decorator.getDTO();
       expect(dto.priorityWeight).toBe(1);
     });
   });

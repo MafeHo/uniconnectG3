@@ -81,7 +81,7 @@ describe('Event Services - Pruebas de Suscripciones y Categorías', () => {
       .delete('/events/suscribir'); // Sin parámetros en la URL
 
     expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('error');
-    expect(response.body.error).toContain('Faltan parámetros');
+    expect(response.body).toHaveProperty('error', true);
+    expect(response.body.message).toContain('Datos de entrada inválidos');
   });
 });

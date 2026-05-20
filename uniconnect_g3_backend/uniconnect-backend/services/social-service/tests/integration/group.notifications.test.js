@@ -48,8 +48,8 @@ describe('Social Service - Criterio 3: Persistencia de Notificaciones', () => {
 
         const data = notificationsSnapshot.docs[0].data();
 
-        expect(data.read).toBe(false);
-        console.log('✅ Estado inicial de lectura validado: false');
+        expect(data.status).toBe('unread');
+        console.log('✅ Estado inicial de lectura validado: unread');
     });
 
     it('debe persistir la fecha de creación automáticamente', async () => {

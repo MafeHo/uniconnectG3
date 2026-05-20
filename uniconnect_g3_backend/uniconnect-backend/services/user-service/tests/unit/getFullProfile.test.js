@@ -1,4 +1,4 @@
-const GetFullProfile = require('../../src/application/use-cases/getFullProfile');
+const GetFullProfile = require('../../src/application/use-cases/getFullProfile').default;
 
 describe('GetFullProfile - Prueba Unitaria', () => {
   let useCase;

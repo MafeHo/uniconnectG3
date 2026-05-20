@@ -4,7 +4,7 @@
  */
 
 const request = require('supertest');
-const app = require('../../index');
+const app = require('../../index').default;
 const TestDatabaseSetup = require('../utils/setupTestDB');
 
 let db;

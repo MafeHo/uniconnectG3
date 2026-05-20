@@ -1,4 +1,4 @@
-const NotificationObserver = require('../../src/application/observers/NotificationObserver');
+const { NotificationObserver } = require('../../src/application/observers/NotificationObserver');
 
 describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
   let observer;
@@ -36,7 +36,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Mención en Ingeniería',
         body: 'Carlos te ha mencionado: "Revisa el PR"',
         metadata: { groupId: 'group-1', type: 'mention' },
-        type: 'chat',
+        type: 'chat_mention',
       });
     });
 
@@ -54,7 +54,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Nuevo mensaje de Ana',
         body: 'Hola, ¿cómo estás?',
         metadata: { chatId: 'chat-2', type: 'private_message' },
-        type: 'chat',
+        type: 'private_message',
       });
     });
   });
@@ -74,7 +74,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Nueva solicitud de unión',
         body: 'Juan quiere unirse a tu grupo "Grupo de Tesis"',
         metadata: { groupId: 'group-3', type: 'group_request' },
-        type: 'group',
+        type: 'group_request',
       });
     });
 
@@ -92,7 +92,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: '¡Solicitud aceptada!',
         body: 'Tu solicitud para unirte a "Grupo de Tesis" fue aceptada',
         metadata: { groupId: 'group-3', type: 'request_accepted' },
-        type: 'group',
+        type: 'group_update',
       });
     });
 
@@ -110,7 +110,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Solicitud rechazada',
         body: 'Tu solicitud para unirte a "Grupo de Tesis" fue rechazada',
         metadata: { groupId: 'group-3', type: 'request_rejected' },
-        type: 'group',
+        type: 'group_update',
       });
     });
   });
@@ -125,7 +125,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Nuevo rol de Administrador',
         body: 'Ahora eres el administrador del grupo "Semillero IA"',
         metadata: { groupId: 'group-4', type: 'admin_transfer' },
-        type: 'group',
+        type: 'group_update',
       });
     });
 
@@ -143,7 +143,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Solicitud de Administración',
         body: 'Santiago te ha solicitado ser el administrador del grupo "Semillero IA"',
         metadata: { groupId: 'group-4', type: 'admin_transfer_requested' },
-        type: 'group',
+        type: 'group_update',
       });
     });
 
@@ -161,7 +161,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Transferencia de Administración Aceptada',
         body: 'María ha aceptado ser el administrador del grupo "Semillero IA"',
         metadata: { groupId: 'group-4', type: 'admin_transfer_accepted' },
-        type: 'group',
+        type: 'group_update',
       });
     });
 
@@ -179,7 +179,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Transferencia de Administración Rechazada',
         body: 'María ha rechazado la solicitud para ser administrador del grupo "Semillero IA"',
         metadata: { groupId: 'group-4', type: 'admin_transfer_rejected' },
-        type: 'group',
+        type: 'group_update',
       });
     });
   });
@@ -233,7 +233,7 @@ describe('NotificationObserver - Pruebas Unitarias Exhaustivas', () => {
         title: 'Mención en Grupo Especial',
         body: 'null te ha mencionado: "undefined"',
         metadata: { groupId: 'grp-abc', type: 'mention' },
-        type: 'chat',
+        type: 'chat_mention',
       });
     });
   });
