@@ -8,7 +8,9 @@ export interface ISubject {
 
 export const ChatEvents = {
   NUEVO_MENSAJE: 'NUEVO_MENSAJE',
-  MENSAJE_PRIVADO: 'MENSAJE_PRIVADO'
+  MENSAJE_PRIVADO: 'MENSAJE_PRIVADO',
+  ENCUESTA_ACTUALIZADA: 'ENCUESTA_ACTUALIZADA',
+  ENCUESTA_CERRADA: 'ENCUESTA_CERRADA'
 } as const;
 
 export type ChatEventType = typeof ChatEvents[keyof typeof ChatEvents];
