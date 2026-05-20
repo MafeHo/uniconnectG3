@@ -109,3 +109,12 @@ export interface IStudySessionRepository {
   findBySeriesId(groupId: string, seriesId: string): Promise<StudySession[]>;
 }
 
+export interface IResourceRepository {
+  create(groupId: string, data: Record<string, unknown>): Promise<string>;
+  findById(groupId: string, resourceId: string): Promise<Record<string, unknown> | null>;
+  findByGroupId(groupId: string, filters?: { type?: string }): Promise<Record<string, unknown>[]>;
+  update(groupId: string, resourceId: string, data: Partial<Record<string, unknown>>): Promise<void>;
+  delete(groupId: string, resourceId: string): Promise<void>;
+}
+
+
