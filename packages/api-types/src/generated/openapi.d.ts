@@ -441,7 +441,7 @@ export interface paths {
                             senderId: string;
                             content: string;
                             /** @enum {string} */
-                            type: "text" | "image" | "file" | "system";
+                            type: "text" | "image" | "file" | "system" | "poll";
                             fileURL?: string | null;
                             fileName?: string | null;
                             fileSize?: number | null;
@@ -707,6 +707,172 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/group-chats/{groupId}/polls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Crear una encuesta rápida en un chat grupal */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    groupId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreatePollRequest"];
+                };
+            };
+            responses: {
+                /** @description Encuesta creada exitosamente */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Message"];
+                    };
+                };
+                /** @description Datos de entrada inválidos */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/group-chats/{groupId}/polls/{messageId}/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Votar en una encuesta activa */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    groupId: string;
+                    messageId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["VotePollRequest"];
+                };
+            };
+            responses: {
+                /** @description Voto registrado y porcentaje calculado exitosamente */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PollResults"];
+                    };
+                };
+                /** @description Opción inválida o error de validación */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Encuesta no encontrada */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Voto duplicado (el usuario ya votó) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description La encuesta está cerrada o expirada */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/group-chats/{groupId}/polls/{messageId}/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obtener resultados actualizados de una encuesta con porcentajes */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    groupId: string;
+                    messageId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Resultados recuperados con éxito */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PollResults"];
+                    };
+                };
+                /** @description Encuesta no encontrada */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2190,7 +2356,7 @@ export interface components {
             senderId: string;
             content: string;
             /** @enum {string} */
-            type: "text" | "image" | "file" | "system";
+            type: "text" | "image" | "file" | "system" | "poll";
             fileURL?: string | null;
             fileName?: string | null;
             fileSize?: number | null;
@@ -2206,7 +2372,7 @@ export interface components {
              * @default text
              * @enum {string}
              */
-            type: "text" | "image" | "file" | "system";
+            type: "text" | "image" | "file" | "system" | "poll";
             fileURL?: string | null;
             fileName?: string | null;
             fileSize?: number | null;
@@ -2234,6 +2400,30 @@ export interface components {
         };
         ChatSuccessResponse: {
             success: boolean;
+        };
+        CreatePollRequest: {
+            senderId: string;
+            question: string;
+            options: string[];
+            duration: number;
+            text?: string;
+        };
+        VotePollRequest: {
+            userId: string;
+            optionIndex: number;
+        };
+        PollResults: {
+            question: string;
+            options: {
+                text: string;
+                votes: number;
+                percentage: number;
+                voters: string[];
+            }[];
+            totalVotes: number;
+            isClosed: boolean;
+            closesAt: string;
+            creatorId: string;
         };
         Faculty: {
             id: string;

@@ -19,6 +19,14 @@ export class GroupChatObserver implements IObserver {
       
       this.io.to(groupId).emit('new_message', message);
       console.log(`[Observer Debug] Emitido con éxito a la sala ${groupId}`);
+    } else if (event === ChatEvents.ENCUESTA_ACTUALIZADA) {
+      const { groupId, messageId, results, totalVotes } = data as any;
+      console.log(`[Observer Debug] Difundiendo actualización de encuesta ${messageId} en sala ${groupId}`);
+      this.io.to(groupId).emit('poll_update', { messageId, results, totalVotes });
+    } else if (event === ChatEvents.ENCUESTA_CERRADA) {
+      const { groupId, messageId, finalResults, totalVotes } = data as any;
+      console.log(`[Observer Debug] Difundiendo cierre de encuesta ${messageId} en sala ${groupId}`);
+      this.io.to(groupId).emit('poll_closed', { messageId, finalResults, totalVotes });
     }
   }
 }

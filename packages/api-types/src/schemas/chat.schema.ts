@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const MessageTypeSchema = z.enum(['text', 'image', 'file', 'system']);
+export const MessageTypeSchema = z.enum(['text', 'image', 'file', 'system', 'poll']);
 
 export const MessageSchema = z.object({
   id: z.string(),
@@ -94,5 +94,41 @@ export const ChatMessageParamsSchema = z.object({
   chatId: z.string().min(1, 'El chatId es requerido'),
   messageId: z.string().min(1, 'El messageId es requerido'),
 });
+
+// US-V04: Poll integration schemas
+export const CreatePollRequestSchema = z.object({
+  senderId: z.string().min(1, 'El senderId es requerido'),
+  question: z.string().min(1, 'La pregunta no puede estar vacía').max(500),
+  options: z.array(z.string().min(1).max(200)).min(2, 'Mínimo 2 opciones').max(10, 'Máximo 10 opciones'),
+  duration: z.number().min(1, 'Duración mínima 1 minuto').max(1440, 'Duración máxima 24 horas'),
+  text: z.string().optional(),
+});
+
+export const VotePollRequestSchema = z.object({
+  userId: z.string().min(1, 'El userId es requerido'),
+  optionIndex: z.number().int().min(0, 'Índice de opción inválido'),
+});
+
+export const PollOptionResultSchema = z.object({
+  text: z.string(),
+  votes: z.number(),
+  percentage: z.number(),
+  voters: z.array(z.string()),
+});
+
+export const PollResultsResponseSchema = z.object({
+  question: z.string(),
+  options: z.array(PollOptionResultSchema),
+  totalVotes: z.number(),
+  isClosed: z.boolean(),
+  closesAt: z.string(),
+  creatorId: z.string(),
+});
+
+export const PollParamsSchema = z.object({
+  groupId: z.string().min(1, 'El groupId es requerido'),
+  messageId: z.string().min(1, 'El messageId es requerido'),
+});
+
 
 

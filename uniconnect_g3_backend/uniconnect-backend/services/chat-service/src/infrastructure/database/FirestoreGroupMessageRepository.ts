@@ -92,4 +92,17 @@ export class FirestoreGroupMessageRepository implements IGroupMessageRepository 
       .doc(messageId)
       .update(data);
   }
+
+  async findActivePolls(): Promise<Array<Record<string, unknown> & { groupId: string }>> {
+    const snapshot = await this.db
+      .collectionGroup('messages')
+      .where('type', '==', 'poll')
+      .where('metadata.encuesta.isClosed', '==', false)
+      .get();
+
+    return snapshot.docs.map(doc => {
+      const groupId = doc.ref.parent.parent?.id || '';
+      return { id: doc.id, groupId, ...doc.data() } as Record<string, unknown> & { groupId: string };
+    });
+  }
 }

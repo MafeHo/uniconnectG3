@@ -22,6 +22,9 @@ import { GetMessages } from './src/application/use-cases/getMessages';
 import { SendGroupMessage } from './src/application/use-cases/sendGroupMessage';
 import { AddReaction } from './src/application/use-cases/addReaction';
 import { AddGroupReaction } from './src/application/use-cases/addGroupReaction';
+import { CreatePoll } from './src/application/use-cases/createPoll';
+import { VotePoll } from './src/application/use-cases/votePoll';
+import { PollScheduler } from './src/application/scheduler/PollScheduler';
 
 // Observer Pattern
 import chatSubject from './src/application/observer/ChatSubject';
@@ -61,6 +64,13 @@ const sendGroupMessageUC = new SendGroupMessage(groupMessageRepo, groupMemberRep
 const addReactionUC = new AddReaction(messageRepo, socketService);
 const addGroupReactionUC = new AddGroupReaction(groupMessageRepo, socketService);
 
+// US-V04: Poll infrastructure & Use cases
+const pollScheduler = PollScheduler.getInstance();
+pollScheduler.init(groupMessageRepo);
+
+const createPollUC = new CreatePoll(groupMessageRepo, groupMemberRepo, pollScheduler);
+const votePollUC = new VotePoll(groupMessageRepo, groupMemberRepo);
+
 const chatCtrl = new ChatController({
   getOrCreateChat: getOrCreateChatUC,
   sendMessage: sendMessageUC,
@@ -71,7 +81,10 @@ const chatCtrl = new ChatController({
 
 const groupChatCtrl = new GroupChatController({
   sendGroupMessage: sendGroupMessageUC,
-  addGroupReaction: addGroupReactionUC
+  addGroupReaction: addGroupReactionUC,
+  createPoll: createPollUC,
+  votePoll: votePollUC,
+  groupMessageRepo: groupMessageRepo
 });
 
 // Setup Express
@@ -107,6 +120,13 @@ chatSubject.attach(groupChatObserver);
 // US-M03: Puente con NotificationService para Menciones
 const mentionObserver = new MentionNotificationObserver(db);
 chatSubject.attach(mentionObserver);
+
+// US-V04: Restaurar timers de encuestas activas tras reinicios
+pollScheduler.restoreActivePolls(groupMessageRepo).then(() => {
+  console.log('[PollScheduler] Encuestas activas restauradas con éxito');
+}).catch(err => {
+  console.error('[PollScheduler] Error al restaurar encuestas activas:', err);
+});
 
 // --- PRESENCE TRACKER ---
 const activeUsers = new Map<string, string>();
@@ -403,6 +423,156 @@ io.on('connection', async (socket: Socket) => {
     } catch (error) {
       console.error("[Socket Debug] ❌ Error delta sync grupal:", error);
       if (callback) callback([]);
+    }
+  });
+
+  // --- US-V04: ENCUESTAS EN CHAT GRUPAL ---
+  socket.on('create_poll', async (rawPayload: unknown, callback: (res: { success: boolean; [key: string]: unknown }) => void) => {
+    let payload = rawPayload;
+
+    if (typeof rawPayload === 'string') {
+      try {
+        payload = JSON.parse(rawPayload);
+      } catch (e) {
+        console.error("[Socket Debug] Error parseando payload de create_poll string:", e);
+      }
+    }
+
+    const typedPayload = payload as { sender_id?: string; group_id?: string; question?: string; options?: string[]; duration?: number; text?: string } | null;
+    const { sender_id, group_id, question, options, duration, text } = typedPayload || {};
+
+    if (!sender_id || !group_id || !question || !options || !duration) {
+      if (callback) callback({ success: false, error: 'Campos requeridos faltantes' });
+      return;
+    }
+
+    try {
+      const result = await createPollUC.execute(group_id, sender_id, {
+        question,
+        options,
+        duration,
+        text
+      });
+
+      const responseData = formatMessageDTO(result);
+
+      if (callback) {
+        callback({ success: true, data: responseData });
+      }
+    } catch (error) {
+      console.error('[Socket Debug] ❌ ERROR en create_poll:', error);
+      const errorDTO = formatErrorDTO(error as Error & { codigo?: string; detalles?: string });
+      socket.emit('error_message', errorDTO);
+      if (callback) callback({ success: false, ...errorDTO });
+    }
+  });
+
+  socket.on('vote_poll', async (rawPayload: unknown, callback: (res: { success: boolean; [key: string]: unknown }) => void) => {
+    let payload = rawPayload;
+
+    if (typeof rawPayload === 'string') {
+      try {
+        payload = JSON.parse(rawPayload);
+      } catch (e) {
+        console.error("[Socket Debug] Error parseando payload de vote_poll string:", e);
+      }
+    }
+
+    const typedPayload = payload as { group_id?: string; message_id?: string; option_index?: number } | null;
+    const { group_id, message_id, option_index } = typedPayload || {};
+    const userIdOfSocket = (socket as Socket & { userId?: string }).userId || userId;
+
+    if (!group_id || !message_id || option_index === undefined || !userIdOfSocket) {
+      if (callback) callback({ success: false, error: 'Campos requeridos faltantes' });
+      return;
+    }
+
+    try {
+      const result = await votePollUC.execute(group_id, message_id, userIdOfSocket, option_index);
+      if (callback) {
+        callback({ success: true, data: result });
+      }
+    } catch (error: any) {
+      console.error('[Socket Debug] ❌ ERROR en vote_poll:', error);
+      const errorDTO = formatErrorDTO(error);
+      socket.emit('error_message', errorDTO);
+      if (callback) {
+        callback({
+          success: false,
+          ...errorDTO
+        });
+      }
+    }
+  });
+
+  socket.on('get_poll_results', async (rawPayload: unknown, callback: (res: { success: boolean; [key: string]: unknown }) => void) => {
+    let payload = rawPayload;
+
+    if (typeof rawPayload === 'string') {
+      try {
+        payload = JSON.parse(rawPayload);
+      } catch (e) {
+        console.error("[Socket Debug] Error parseando payload de get_poll_results string:", e);
+      }
+    }
+
+    const typedPayload = payload as { group_id?: string; message_id?: string } | null;
+    const { group_id, message_id } = typedPayload || {};
+
+    if (!group_id || !message_id) {
+      if (callback) callback({ success: false, error: 'Campos requeridos faltantes' });
+      return;
+    }
+
+    try {
+      const msg = await groupMessageRepo.getById(group_id, message_id);
+      if (!msg) {
+        if (callback) callback({ success: false, error: 'Encuesta no encontrada' });
+        return;
+      }
+
+      const metadata = (msg.metadata || {}) as Record<string, any>;
+      const encuesta = metadata.encuesta || msg.encuesta;
+
+      if (!encuesta) {
+        if (callback) callback({ success: false, error: 'El mensaje no contiene una encuesta' });
+        return;
+      }
+
+      const votes = (encuesta.votes || {}) as Record<string, string[]>;
+      encuesta.options.forEach((_: string, idx: number) => {
+        if (!votes[String(idx)]) {
+          votes[String(idx)] = [];
+        }
+      });
+
+      const totalVotes = Object.values(votes).reduce((sum, arr) => sum + arr.length, 0);
+      const optionsWithResults = encuesta.options.map((optionText: string, idx: number) => {
+        const optVotes = (votes[String(idx)] || []).length;
+        return {
+          text: optionText,
+          votes: optVotes,
+          percentage: totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0,
+          voters: votes[String(idx)] || []
+        };
+      });
+
+      if (callback) {
+        callback({
+          success: true,
+          data: {
+            question: encuesta.question,
+            options: optionsWithResults,
+            totalVotes,
+            isClosed: encuesta.isClosed,
+            closesAt: encuesta.closesAt,
+            creatorId: encuesta.creatorId
+          }
+        });
+      }
+    } catch (error) {
+      console.error('[Socket Debug] ❌ ERROR en get_poll_results:', error);
+      if (callback) callback({ success: false, error: 'Error al obtener resultados' });
     }
   });
 

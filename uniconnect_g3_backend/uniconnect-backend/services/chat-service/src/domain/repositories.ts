@@ -25,6 +25,7 @@ export interface IGroupMessageRepository {
   getMessagesSince(groupId: string, timestamp: number | string | Date): Promise<Record<string, unknown>[]>;
   getById(groupId: string, messageId: string): Promise<Record<string, unknown> | null>;
   update(groupId: string, messageId: string, data: Record<string, unknown>): Promise<void>;
+  findActivePolls(): Promise<Array<Record<string, unknown> & { groupId: string }>>;
 }
 
 export interface IMessageRepository {
