@@ -63,6 +63,13 @@ describe('Notification Decorators - Pruebas Unitarias', () => {
       expect(dto.priority).toBe('normal');
       expect(dto.priorityWeight).toBe(1);
     });
+
+    it('debe retornar peso por defecto (1) si la prioridad no existe en weights', () => {
+      const decorator = new PrioridadDecorator(baseNotification, 'normal');
+      decorator.priority = 'desconocido';
+      const dto = decorator.getDTO();
+      expect(dto.priorityWeight).toBe(1);
+    });
   });
 
   describe('AccionDecorator', () => {

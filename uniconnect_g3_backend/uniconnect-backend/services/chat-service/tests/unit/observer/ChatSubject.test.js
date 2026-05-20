@@ -1,4 +1,5 @@
 const ChatSubject = require('../../../src/application/observer/ChatSubject').default;
+const { ChatEvents } = require('../../../src/domain/observer/ISubject');
 
 describe('ChatSubject.js - Pruebas del patrón Observer', () => {
   let observer1;
@@ -51,9 +52,35 @@ describe('ChatSubject.js - Pruebas del patrón Observer', () => {
     const mockObserver = { update: jest.fn() };
     ChatSubject.attach(mockObserver);
     
-    await ChatSubject.notify('evento_prueba', { data: 'test' });
+    await ChatSubject.notify(ChatEvents.NUEVO_MENSAJE, { data: 'test' });
     
     expect(mockObserver.update).toHaveBeenCalledTimes(1);
-    expect(mockObserver.update).toHaveBeenCalledWith('evento_prueba', { data: 'test' });
+    expect(mockObserver.update).toHaveBeenCalledWith(ChatEvents.NUEVO_MENSAJE, { data: 'test' });
+  });
+
+  test('Criterio 5: Caso limite de registrar un observador ya existente', () => {
+    ChatSubject.attach(observer1);
+    ChatSubject.attach(observer1); // Duplicado
+    expect(ChatSubject.observers).toHaveLength(1);
+  });
+
+  test('Criterio 6: Caso limite de remover un observador que no existe', () => {
+    ChatSubject.attach(observer1);
+    ChatSubject.detach(observer2); // No existe
+    expect(ChatSubject.observers).toHaveLength(1);
+  });
+
+  test('Criterio 7: Caso limite de capturar excepcion no heredada de Error en notify', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
+    observer1.update.mockImplementation(() => {
+      throw "Error string simulado"; // Excepcion no tipo Error
+    });
+
+    ChatSubject.attach(observer1);
+    await ChatSubject.notify('mensaje_enviado', { contenido: 'Hola' });
+    
+    expect(consoleSpy).toHaveBeenCalledWith('Error en el observer: Error string simulado');
+    consoleSpy.mockRestore();
   });
 });

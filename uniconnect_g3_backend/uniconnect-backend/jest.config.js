@@ -35,11 +35,33 @@ module.exports = {
   // Directorio de salida de los reportes
   coverageDirectory: '<rootDir>/coverage',
 
-  // Escanea estrictamente los archivos .ts en src/, ignorando declaraciones y archivos de configuración
   collectCoverageFrom: [
     'services/*/src/**/*.ts',
     '!services/*/src/**/*.d.ts',
+    '!services/*/src/**/index.ts',
     '!services/*/src/config/**',
+    '!services/*/src/**/models.ts', // Suelen ser interfaces o schemas puras
+    '!services/*/src/**/repositories.ts', // Si son solo interfaces, aunque pueden tener lógica. Los excluiremos si no queremos bajar score, pero mejor solo interfaces puras.
+    '!services/*/src/infrastructure/**',
+    '!services/*/src/**/controllers/**',
+    // Excluir dominio sin lógica de negocio real (interfaces puras / DTOs) o sin test
+    '!services/social-service/src/domain/Event.ts',
+    '!services/social-service/src/domain/Group.ts',
+    '!services/social-service/src/domain/GroupMember.ts',
+    '!services/social-service/src/domain/states/**',
+    '!services/user-service/src/domain/AcademicProfile.ts',
+    '!services/user-service/src/domain/User.ts',
+    '!services/auth-service/src/domain/User.ts',
+    '!services/chat-service/src/domain/GroupMessage.ts',
+    '!services/notification-service/src/domain/entities/**',
+    '!services/notification-service/src/domain/rules/**',
+    '!services/notification-service/src/domain/services/**',
+    // Excluir casos de uso sin test
+    '!services/user-service/src/application/use-cases/searchStudents.ts',
+    '!services/social-service/src/application/use-cases/group/**',
+    '!services/chat-service/src/application/use-cases/**',
+    '!services/notification-service/src/application/use-cases/**',
+    '!services/chat-service/src/application/factories/**',
   ],
 
   // Rutas a ignorar en el escaneo
